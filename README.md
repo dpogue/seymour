@@ -19,7 +19,7 @@ npm install --save-dev seymour
 Run Seymour on your Cordova project:
 
 ```
-seymour
+$(npm bin)/seymour
 ```
 
 
@@ -31,7 +31,7 @@ config.xml file. It will effectively run the following:
 
 ```
 cordova prepare --browserify
-cordova build --browserify --device --buildConfig build.json
+cordova build --browserify --device
 ```
 
 You can control additional behaviour through environment variables.
@@ -49,8 +49,8 @@ resulting build:
 
 ### SEY_BUILD_TYPE
 
-* **Valid options:** `Debug`, `Release`
-* **Default value:** `Debug`
+* **Valid options:** `debug`, `release`
+* **Default value:** `debug`
 
 ### SEY_BUILD_PLATFORMS
 
