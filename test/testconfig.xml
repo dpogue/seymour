@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="ca.dpogue.seymour.test" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>SeymourTest</name>
+    <description>
+        A test app for Seymour.
+    </description>
+    <author email="example@example.com" href="https://dpogue.ca">
+        Darryl Pogue
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+</widget>

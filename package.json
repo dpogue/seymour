@@ -1,0 +1,25 @@
+{
+  "name": "seymour",
+  "version": "1.0.0",
+  "description": "A build helper for Apache Cordova projects.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dpogue/seymour"
+  },
+  "author": "Darryl Pogue <darryl@dpogue.ca>",
+  "license": "Apache-2.0",
+  "main": "src/seymour.js",
+  "bin": "bin/seymour",
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "dependencies": {
+    "cordova-common": "^1.0.0",
+    "cordova-lib": "^5.4.0"
+  },
+  "devDependencies": {
+    "q": "^1.4.1",
+    "sinon": "^1.17.2",
+    "tap": "^2.2.0"
+  }
+}
