@@ -1,6 +1,10 @@
 Seymour
 =======
 
+<p align="center">
+  <img alt="" width="481" src="https://github.com/dpogue/seymour/blob/master/seymour.png">
+</p>
+
 Seymour is a build helper for [Apache Cordova](http://cordova.io) projects.
 
 It takes configuration from environment variables, making it ideal for use in
