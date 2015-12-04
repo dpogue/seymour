@@ -82,6 +82,13 @@ This will override the application version defined in config.xml.
 This will enable verbose logging from the Cordova build commands.
 
 
+Contributing
+------------
+
+Contributions of bug reports, feature requests, and pull requests are greatly appreciated!
+
+Please note that this project is released with a [Contributor Code of Conduct](https://github.com/dpogue/seymour/blob/master/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+
 Licence
 -------
 
