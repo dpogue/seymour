@@ -16,4 +16,4 @@
  */
 
 var seymour = require('../src/seymour');
-seymour(process.argv, process.env);
+seymour(process.argv, process.env).done();

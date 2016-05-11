@@ -11,15 +11,15 @@
   "main": "src/seymour.js",
   "bin": "bin/seymour",
   "scripts": {
-    "test": "tap test/*.js"
+    "test": "tap test/*.js -Rspec"
   },
   "dependencies": {
-    "cordova-common": "^1.0.0",
+    "cordova-common": "^1.2.0",
     "cordova-lib": "^6.0.0"
   },
   "devDependencies": {
     "q": "^1.4.1",
-    "sinon": "^1.17.2",
-    "tap": "^2.2.0"
+    "sinon": "^1.17.4",
+    "tap": "^5.7.1"
   }
 }

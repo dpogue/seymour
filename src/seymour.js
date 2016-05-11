@@ -18,6 +18,8 @@ var pkg             = require('../package.json');
 var cordova         = require('cordova-lib').cordova;
 var ConfigParser    = require('cordova-common').ConfigParser;
 var CordovaError    = require('cordova-common').CordovaError;
+var events          = require('cordova-lib').events;
+var CordovaLogger   = require('cordova-common').CordovaLogger;
 var fs              = require('fs');
 var path            = require('path');
 
@@ -39,6 +41,9 @@ function run(args, env)
         throw new CordovaError('Current working directory is not a Cordova-based project.');
     }
 
+    var logger = CordovaLogger.get();
+    logger.subscribe(events);
+
     var configPath = path.join(projectRoot, 'config.xml');
     var config = new ConfigParser(configPath);
 
@@ -47,7 +52,8 @@ function run(args, env)
         options: {device: true},
         verbose: false,
         silent: false,
-        browserify: true
+        browserify: true,
+        fetch: true
     };
 
 
@@ -66,6 +72,7 @@ function run(args, env)
     if (env.SEY_VERBOSE) {
         opts.verbose = true;
         opts.options.verbose = true;
+        logger.setLevel('verbose');
     }
 
     if (env.SEY_BUILD_PLATFORMS) {
@@ -85,7 +92,7 @@ function run(args, env)
 
     config.write();
 
-    cordova.raw.prepare.call(null, opts)
+    return cordova.raw.prepare.call(null, opts)
     .then(function() {
         // Some plugins (Crosswalk *shakefist*) add a bunch of their own stuff
         // to config.xml that overrides user-defined variables.
@@ -97,7 +104,6 @@ function run(args, env)
     })
     .catch(function(err) {
         throw err;
-    })
-    .done();
+    });
 }
 module.exports = run;

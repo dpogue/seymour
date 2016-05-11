@@ -58,17 +58,16 @@ test('no parameters', function(t) {
         options: {device: true, debug: true},
         verbose: false,
         silent: false,
-        browserify: true
+        browserify: true,
+        fetch: true
     };
 
-    seymour([], {});
-
-    setTimeout(function() {
+    return seymour([], {}).then(function(res) {
         t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
         t.ok(cordova.raw.build.call.calledWith(null, opts), 'calls build');
 
         t.end();
-    }, 0);
+    });
 });
 
 
@@ -78,17 +77,16 @@ test('SEY_VERBOSE', function(t) {
         options: {debug: true, device: true, verbose: true},
         verbose: true,
         silent: false,
-        browserify: true
+        browserify: true,
+        fetch: true
     };
 
-    seymour([], {SEY_VERBOSE: true});
-
-    setTimeout(function() {
+    seymour([], {SEY_VERBOSE: true}).then(function() {
         t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
         t.ok(cordova.raw.build.call.calledWith(null, opts), 'calls build');
 
         t.end();
-    }, 0);
+    });
 });
 
 
@@ -98,15 +96,14 @@ test('SEY_BUILD_PLATFORMS', function(t) {
         options: {device: true, debug: true},
         verbose: false,
         silent: false,
-        browserify: true
+        browserify: true,
+        fetch: true
     };
 
-    seymour([], {SEY_BUILD_PLATFORMS: "Windows,iOS"});
-
-    setTimeout(function() {
+    seymour([], {SEY_BUILD_PLATFORMS: "Windows,iOS"}).then(function() {
         t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
         t.ok(cordova.raw.build.call.calledWith(null, opts), 'calls build');
 
         t.end();
-    }, 0);
+    });
 });
