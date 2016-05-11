@@ -92,7 +92,11 @@ function run(args, env)
 
     config.write();
 
-    return cordova.raw.prepare.call(null, opts)
+    var base_opts = JSON.stringify(opts);
+
+    var prep_opts = JSON.parse(base_opts);
+
+    return cordova.raw.prepare.call(null, prep_opts)
     .then(function() {
         // Some plugins (Crosswalk *shakefist*) add a bunch of their own stuff
         // to config.xml that overrides user-defined variables.
@@ -100,7 +104,8 @@ function run(args, env)
         // we have the data that we want and not extra garbage.
         config.write();
 
-        return cordova.raw.build.call(null, opts);
+        var build_opts = JSON.parse(base_opts);
+        return cordova.raw.build.call(null, build_opts);
     })
     .catch(function(err) {
         throw err;
