@@ -52,8 +52,7 @@ function run(args, env)
         options: {device: true},
         verbose: false,
         silent: false,
-        browserify: true,
-        fetch: true
+        browserify: true
     };
 
 

@@ -58,8 +58,7 @@ test('no parameters', function(t) {
         options: {device: true, debug: true},
         verbose: false,
         silent: false,
-        browserify: true,
-        fetch: true
+        browserify: true
     };
 
     return seymour([], {}).then(function(res) {
@@ -77,8 +76,7 @@ test('SEY_VERBOSE', function(t) {
         options: {debug: true, device: true, verbose: true},
         verbose: true,
         silent: false,
-        browserify: true,
-        fetch: true
+        browserify: true
     };
 
     seymour([], {SEY_VERBOSE: true}).then(function() {
@@ -96,8 +94,7 @@ test('SEY_BUILD_PLATFORMS', function(t) {
         options: {device: true, debug: true},
         verbose: false,
         silent: false,
-        browserify: true,
-        fetch: true
+        browserify: true
     };
 
     seymour([], {SEY_BUILD_PLATFORMS: "Windows,iOS"}).then(function() {
