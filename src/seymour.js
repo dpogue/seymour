@@ -88,6 +88,10 @@ function run(args, env)
         opts.options.debug = true;
     }
 
+    if (env.SEY_BUILD_CONFIG) {
+        opts.options.buildConfig = env.SEY_BUILD_CONFIG;
+    }
+
 
     config.write();
 

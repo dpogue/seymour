@@ -64,6 +64,14 @@ resulting build:
 You cannot use this to add new platforms that are not listed in config.xml. You
 can only use this to restrict to a subset of platforms.
 
+### SEY_BUILD_CONFIG
+
+The name of a JSON file containing build signing information.
+
+See the following Cordova documentation for JSON options:
+* [Android](http://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#using-buildjson)
+* [iOS](http://cordova.apache.org/docs/en/latest/guide/platforms/ios/index.html#using-buildjson)
+* [Windows](http://cordova.apache.org/docs/en/latest/guide/platforms/win8/index.html#signing-an-app)
 
 ### SEY_APP_NAME
 
