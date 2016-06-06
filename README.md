@@ -89,6 +89,11 @@ This will override the application version defined in config.xml.
 
 This will enable verbose logging from the Cordova build commands.
 
+### SEY_NOBROWSERIFY
+
+This will disable passing the `--browserify` flag to the Cordova build
+commands.
+
 
 Contributing
 ------------

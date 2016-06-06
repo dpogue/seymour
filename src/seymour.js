@@ -93,6 +93,11 @@ function run(args, env)
     }
 
 
+    if (env.SEY_NOBROWSERIFY) {
+        opts.browserify = false;
+    }
+
+
     config.write();
 
     var base_opts = JSON.stringify(opts);

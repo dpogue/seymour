@@ -104,3 +104,20 @@ test('SEY_BUILD_PLATFORMS', function(t) {
         t.end();
     });
 });
+
+test('SEY_NOBROWSERIFY', function(t) {
+    var opts = {
+        platforms: [],
+        options: {device: true, debug: true},
+        verbose: false,
+        silent: false,
+        browserify: false
+    };
+
+    return seymour([], {SEY_NOBROWSERIFY: true}).then(function(res) {
+        t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
+        t.ok(cordova.raw.build.call.calledWith(null, opts), 'calls build');
+
+        t.end();
+    });
+});
