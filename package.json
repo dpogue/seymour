@@ -11,7 +11,9 @@
   "main": "src/seymour.js",
   "bin": "bin/seymour",
   "scripts": {
-    "test": "tap test/*.js -Rspec"
+    "test": "tap test/*.js -Rspec",
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags"
   },
   "dependencies": {
     "cordova-common": "^1.2.0",
