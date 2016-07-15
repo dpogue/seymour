@@ -22,6 +22,8 @@ var events          = require('cordova-lib').events;
 var CordovaLogger   = require('cordova-common').CordovaLogger;
 var fs              = require('fs');
 var path            = require('path');
+var HooksRunner     = require('cordova-lib/src/hooks/HooksRunner');
+var cordovaUtil     = require('cordova-lib/src/cordova/util');
 
 function run(args, env)
 {
@@ -112,8 +114,18 @@ function run(args, env)
         // we have the data that we want and not extra garbage.
         config.write();
 
-        var build_opts = JSON.parse(base_opts);
-        return cordova.raw.build.call(null, build_opts);
+        var projectRoot = cordovaUtil.cdProjectRoot();
+        var build_opts = cordovaUtil.preProcessOptions(JSON.parse(base_opts));
+
+        var hooksRunner = new HooksRunner(projectRoot);
+
+        return hooksRunner.fire('before_build', build_opts)
+        .then(function() {
+            return cordova.raw.compile.call(null, build_opts);
+        })
+        .then(function() {
+            return hooksRunner.fire('after_build', build_opts);
+        });
     })
     .catch(function(err) {
         throw err;
