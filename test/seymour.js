@@ -23,6 +23,9 @@ var fs      = require('fs');
 var seymour = require('../src/seymour');
 var cordova = require('cordova-lib').cordova;
 
+process.env.PWD = __dirname;
+process.chdir(__dirname);
+
 sinon.stub(console, 'log');
 
 test('version', function(t) {
@@ -49,7 +52,7 @@ var config = fs.readFileSync(path.join(__dirname, 'testconfig.xml'), 'utf8');
 
 sinon.stub(cordova, 'findProjectRoot').returns(__dirname);
 sinon.stub(cordova.raw.prepare, 'call').returns(Q(true));
-sinon.stub(cordova.raw.build, 'call').returns(Q(true));
+sinon.stub(cordova.raw.compile, 'call').returns(Q(true));
 sinon.stub(fs, 'readFileSync').withArgs(config_path).returns(config);
 
 test('no parameters', function(t) {
@@ -63,7 +66,7 @@ test('no parameters', function(t) {
 
     return seymour([], {}).then(function(res) {
         t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.raw.build.call.calledWith(null, opts), 'calls build');
+        t.ok(cordova.raw.compile.call.called, 'calls compile');
 
         t.end();
     });
@@ -81,7 +84,7 @@ test('SEY_VERBOSE', function(t) {
 
     seymour([], {SEY_VERBOSE: true}).then(function() {
         t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.raw.build.call.calledWith(null, opts), 'calls build');
+        t.ok(cordova.raw.compile.call.called, 'calls compile');
 
         t.end();
     });
@@ -99,7 +102,7 @@ test('SEY_BUILD_PLATFORMS', function(t) {
 
     seymour([], {SEY_BUILD_PLATFORMS: "Windows,iOS"}).then(function() {
         t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.raw.build.call.calledWith(null, opts), 'calls build');
+        t.ok(cordova.raw.compile.call.called, 'calls compile');
 
         t.end();
     });
@@ -116,7 +119,7 @@ test('SEY_NOBROWSERIFY', function(t) {
 
     return seymour([], {SEY_NOBROWSERIFY: true}).then(function(res) {
         t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.raw.build.call.calledWith(null, opts), 'calls build');
+        t.ok(cordova.raw.compile.call.called, 'calls compile');
 
         t.end();
     });
