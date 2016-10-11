@@ -11,3 +11,4 @@ node_modules
 .settings
 *.sublime-project
 *.sublime-workspace
+test/config.xml

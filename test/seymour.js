@@ -20,8 +20,9 @@ var Q       = require('q');
 var path    = require('path');
 var fs      = require('fs');
 
-var seymour = require('../src/seymour');
-var cordova = require('cordova-lib').cordova;
+var seymour       = require('../src/seymour');
+var cordova       = require('cordova-lib').cordova;
+var ConfigParser  = require('cordova-common').ConfigParser;
 
 process.env.PWD = __dirname;
 process.chdir(__dirname);
@@ -118,6 +119,28 @@ test('SEY_NOBROWSERIFY', function(t) {
     };
 
     return seymour([], {SEY_NOBROWSERIFY: true}).then(function(res) {
+        t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
+        t.ok(cordova.raw.compile.call.called, 'calls compile');
+
+        t.end();
+    });
+});
+
+
+test('Preferences', function(t) {
+    var setGlobalPref = sinon.spy(ConfigParser.prototype, 'setGlobalPreference');
+
+    var opts = {
+        platforms: [],
+        options: {debug: true, device: true},
+        verbose: false,
+        silent: false,
+        browserify: true
+    };
+
+    seymour([], {SEY_PREFERENCE_backgroundColor: 'FF000000'}).then(function() {
+        t.ok(setGlobalPref.calledWith('backgroundColor', 'FF000000'), 'sets the preferences');
+
         t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
         t.ok(cordova.raw.compile.call.called, 'calls compile');
 

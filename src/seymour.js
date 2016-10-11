@@ -100,6 +100,16 @@ function run(args, env)
     }
 
 
+    Object.keys(env)
+        .filter(function(v) {
+            return v.match(/^SEY_PREFERENCE_/);
+        })
+        .forEach(function(envName) {
+            var name = envName.replace(/^SEY_PREFERENCE_/, '');
+            config.setGlobalPreference(name, env[envName]);
+        });
+
+
     config.write();
 
     var base_opts = JSON.stringify(opts);

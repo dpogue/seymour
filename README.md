@@ -94,6 +94,13 @@ This will enable verbose logging from the Cordova build commands.
 This will disable passing the `--browserify` flag to the Cordova build
 commands.
 
+### SEY_PREFERENCE_*
+
+This will allow you to set and override preferences globally in config.xml.
+
+For example, you could specify `SEY_PREFERENCE_backgroundColor=FF0000FF` to
+override the `backgroundColor` preference in config.xml.
+
 
 Contributing
 ------------
