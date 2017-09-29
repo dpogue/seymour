@@ -16,8 +16,8 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "cordova-common": "^1.2.0",
-    "cordova-lib": "^6.0.0"
+    "cordova-common": "^2.1.0",
+    "cordova-lib": "^7.0.0"
   },
   "devDependencies": {
     "q": "^1.4.1",
