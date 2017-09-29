@@ -77,6 +77,10 @@ See the following Cordova documentation for JSON options:
 
 This will override the application name defined in config.xml.
 
+### SEY_APP_SHORTNAME
+
+This will override the application display name defined in config.xml.
+
 ### SEY_APP_ID
 
 This will override the application identifier defined in config.xml.
