@@ -16,7 +16,6 @@
 
 var test    = require('tap').test;
 var sinon   = require('sinon');
-var Q       = require('q');
 var path    = require('path');
 var fs      = require('fs');
 
@@ -64,9 +63,10 @@ test('bad project', function(t) {
 var config_path = path.join(__dirname, 'config.xml');
 var config = fs.readFileSync(path.join(__dirname, 'testconfig.xml'), 'utf8');
 
+var prepareStub = sinon.stub(cordova.raw.prepare, 'call').resolves(true);
+var compileStub = sinon.stub(cordova.raw.compile, 'call').resolves(true);
+
 sinon.stub(cordova, 'findProjectRoot').returns(__dirname);
-sinon.stub(cordova.raw.prepare, 'call').returns(Q(true));
-sinon.stub(cordova.raw.compile, 'call').returns(Q(true));
 sinon.stub(fs, 'readFileSync').withArgs(config_path).returns(config);
 
 test('no parameters', function(t) {
@@ -84,6 +84,56 @@ test('no parameters', function(t) {
 
         t.end();
     });
+});
+
+
+test('failing build', function(t) {
+    var opts = {
+        platforms: [],
+        options: {device: true, debug: true},
+        verbose: false,
+        silent: false,
+        browserify: true
+    };
+
+    t.test('prepare', function(t2) {
+        prepareStub.restore();
+        var stub = sinon.stub(cordova.raw.prepare, 'call').rejects();
+
+        return seymour([], {}).then(function() {
+            t2.notOk(true, 'resolves');
+        })
+        .catch(function() {
+            t2.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
+        })
+        .then(function() {
+            stub.restore();
+            prepareStub = sinon.stub(cordova.raw.prepare, 'call').resolves(true);
+
+            t2.end();
+        });
+    });
+
+    t.test('compile', function(t2) {
+        compileStub.restore();
+        var stub = sinon.stub(cordova.raw.compile, 'call').rejects();
+
+        return seymour([], {}).then(function() {
+            t2.notOk(true, 'resolves');
+        })
+        .catch(function() {
+            t2.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
+            t2.ok(cordova.raw.compile.call.called, 'calls compile');
+        })
+        .then(function() {
+            stub.restore();
+            compileStub = sinon.stub(cordova.raw.compile, 'call').resolves(true);
+
+            t2.end();
+        });
+    });
+
+    t.end();
 });
 
 
