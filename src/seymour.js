@@ -18,7 +18,7 @@ var pkg             = require('../package.json');
 var cordova         = require('cordova-lib').cordova;
 var ConfigParser    = require('cordova-common').ConfigParser;
 var CordovaError    = require('cordova-common').CordovaError;
-var events          = require('cordova-lib').events;
+var events          = require('cordova-common').events;
 var CordovaLogger   = require('cordova-common').CordovaLogger;
 var fs              = require('fs');
 var path            = require('path');
@@ -64,6 +64,10 @@ function run(args, env)
 
     if (env.SEY_APP_NAME) {
         config.setName(env.SEY_APP_NAME);
+    }
+
+    if (env.SEY_APP_SHORTNAME) {
+        config.setShortName(env.SEY_APP_SHORTNAME);
     }
 
     if (env.SEY_APP_VERSION) {
