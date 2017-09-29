@@ -27,10 +27,10 @@ var ConfigParser  = require('cordova-common').ConfigParser;
 process.env.PWD = __dirname;
 process.chdir(__dirname);
 
-sinon.stub(console, 'log');
-
 test('version', function(t) {
     var version = require('../package.json').version;
+
+    var stub = sinon.stub(console, 'log');
 
     t.test('with --version', function(tt) {
         seymour(['node', 'seymour', '--version'], {});
@@ -45,6 +45,19 @@ test('version', function(t) {
     });
 
     t.end();
+
+    stub.restore();
+});
+
+
+test('bad project', function(t) {
+    var stub = sinon.stub(cordova, 'findProjectRoot').returns(null);
+
+    t.throws(function() { seymour([], {}); }, 'throws a CordovaError');
+
+    t.end();
+
+    stub.restore();
 });
 
 
@@ -109,6 +122,75 @@ test('SEY_BUILD_PLATFORMS', function(t) {
     });
 });
 
+
+test('SEY_BUILD_MODE', function(t) {
+    var debug_opts = {
+        platforms: [],
+        options: {device: true, debug: true},
+        verbose: false,
+        silent: false,
+        browserify: true
+    };
+
+    var release_opts = {
+        platforms: [],
+        options: {device: true, release: true},
+        verbose: false,
+        silent: false,
+        browserify: true
+    };
+
+    t.test('unspecified', function(t2) {
+        seymour([], {}).then(function() {
+            t2.ok(cordova.raw.prepare.call.calledWith(null, debug_opts), 'calls prepare with debug=true');
+            t2.ok(cordova.raw.compile.call.called, 'calls compile');
+
+            t2.end();
+        });
+    });
+
+
+    t.test('= "debug"', function(t2) {
+        seymour([], {SEY_BUILD_MODE: "debug"}).then(function() {
+            t2.ok(cordova.raw.prepare.call.calledWith(null, debug_opts), 'calls prepare with debug=true');
+            t2.ok(cordova.raw.compile.call.called, 'calls compile');
+
+            t2.end();
+        });
+    });
+
+
+    t.test('= "release"', function(t2) {
+        seymour([], {SEY_BUILD_MODE: "release"}).then(function() {
+            t2.ok(cordova.raw.prepare.call.calledWith(null, release_opts), 'calls prepare with release=true');
+            t2.ok(cordova.raw.compile.call.called, 'calls compile');
+
+            t2.end();
+        });
+    });
+
+    t.end();
+});
+
+
+test('SEY_BUILD_CONFIG', function(t) {
+    var opts = {
+        platforms: [],
+        options: {device: true, debug: true, buildConfig: 'build.json'},
+        verbose: false,
+        silent: false,
+        browserify: true
+    };
+
+    return seymour([], {SEY_BUILD_CONFIG: 'build.json'}).then(function(res) {
+        t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
+        t.ok(cordova.raw.compile.call.called, 'calls compile');
+
+        t.end();
+    });
+});
+
+
 test('SEY_NOBROWSERIFY', function(t) {
     var opts = {
         platforms: [],
@@ -127,23 +209,51 @@ test('SEY_NOBROWSERIFY', function(t) {
 });
 
 
+test('SEY_APP_ID', function(t) {
+    var setID = sinon.spy(ConfigParser.prototype, 'setPackageName');
+
+    seymour([], {SEY_APP_ID: 'com.example.app.id'}).then(function() {
+        t.ok(setID.calledWith('com.example.app.id'), 'sets the application id');
+        t.end();
+    });
+});
+
+
+test('SEY_APP_NAME', function(t) {
+    var setName = sinon.spy(ConfigParser.prototype, 'setName');
+
+    seymour([], {SEY_APP_NAME: 'MyApp'}).then(function() {
+        t.ok(setName.calledWith('MyApp'), 'sets the application name');
+        t.end();
+    });
+});
+
+
+test('SEY_APP_SHORTNAME', function(t) {
+    var setShortName = sinon.spy(ConfigParser.prototype, 'setShortName');
+
+    seymour([], {SEY_APP_SHORTNAME: 'MyApp'}).then(function() {
+        t.ok(setShortName.calledWith('MyApp'), 'sets the display name');
+        t.end();
+    });
+});
+
+
+test('SEY_APP_VERSION', function(t) {
+    var setVer = sinon.spy(ConfigParser.prototype, 'setVersion');
+
+    seymour([], {SEY_APP_VERSION: '1.2.3-qa'}).then(function() {
+        t.ok(setVer.calledWith('1.2.3-qa'), 'sets the application version');
+        t.end();
+    });
+});
+
+
 test('Preferences', function(t) {
     var setGlobalPref = sinon.spy(ConfigParser.prototype, 'setGlobalPreference');
 
-    var opts = {
-        platforms: [],
-        options: {debug: true, device: true},
-        verbose: false,
-        silent: false,
-        browserify: true
-    };
-
     seymour([], {SEY_PREFERENCE_backgroundColor: 'FF000000'}).then(function() {
         t.ok(setGlobalPref.calledWith('backgroundColor', 'FF000000'), 'sets the preferences');
-
-        t.ok(cordova.raw.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.raw.compile.call.called, 'calls compile');
-
         t.end();
     });
 });
