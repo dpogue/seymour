@@ -120,7 +120,7 @@ function run(args, env)
 
     var prep_opts = JSON.parse(base_opts);
 
-    return cordova.raw.prepare.call(null, prep_opts)
+    return cordova.prepare.call(null, prep_opts)
     .then(function() {
         // Some plugins (Crosswalk *shakefist*) add a bunch of their own stuff
         // to config.xml that overrides user-defined variables.
@@ -135,7 +135,7 @@ function run(args, env)
 
         return hooksRunner.fire('before_build', build_opts)
         .then(function() {
-            return cordova.raw.compile.call(null, build_opts);
+            return cordova.compile.call(null, build_opts);
         })
         .then(function() {
             return hooksRunner.fire('after_build', build_opts);
