@@ -54,7 +54,8 @@ function run(args, env)
         options: {device: true},
         verbose: false,
         silent: false,
-        browserify: true
+        browserify: true,
+        fetch: true
     };
 
 
@@ -101,6 +102,10 @@ function run(args, env)
 
     if (env.SEY_NOBROWSERIFY) {
         opts.browserify = false;
+    }
+
+    if (env.SEY_NOFETCH) {
+        opts.fetch = false;
     }
 
 
