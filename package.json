@@ -20,7 +20,7 @@
     "cordova-lib": "^7.1.0"
   },
   "devDependencies": {
-    "sinon": "^4.0.0",
+    "sinon": "^4.1.0",
     "tap": "^10.7.2"
   }
 }
