@@ -267,25 +267,6 @@ test('SEY_NOBROWSERIFY', function(t) {
 });
 
 
-test('SEY_NOFETCH', function(t) {
-    var opts = {
-        platforms: [],
-        options: {device: true, debug: true},
-        verbose: false,
-        silent: false,
-        browserify: true,
-        fetch: false
-    };
-
-    return seymour([], {SEY_NOFETCH: true}).then(function(res) {
-        t.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.compile.call.called, 'calls compile');
-
-        t.end();
-    });
-});
-
-
 test('SEY_APP_ID', function(t) {
     var setID = sinon.spy(ConfigParser.prototype, 'setPackageName');
 

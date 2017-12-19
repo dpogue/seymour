@@ -98,10 +98,6 @@ This will enable verbose logging from the Cordova build commands.
 This will disable passing the `--browserify` flag to the Cordova build
 commands.
 
-### SEY_NOFETCH
-
-This will pass the `--nofetch` flag to the Cordova build commands.
-
 ### SEY_PREFERENCE_*
 
 This will allow you to set and override preferences globally in config.xml.
