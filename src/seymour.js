@@ -104,10 +104,6 @@ function run(args, env)
         opts.browserify = false;
     }
 
-    if (env.SEY_NOFETCH) {
-        opts.fetch = false;
-    }
-
 
     Object.keys(env)
         .filter(function(v) {
