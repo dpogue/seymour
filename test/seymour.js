@@ -67,7 +67,8 @@ var prepareStub = sinon.stub(cordova.prepare, 'call').resolves(true);
 var compileStub = sinon.stub(cordova.compile, 'call').resolves(true);
 
 sinon.stub(cordova, 'findProjectRoot').returns(__dirname);
-sinon.stub(fs, 'readFileSync').withArgs(config_path).returns(config);
+var readFileStub = sinon.stub(fs, 'readFileSync');
+readFileStub.withArgs(config_path).returns(config);
 
 test('no parameters', function(t) {
     var opts = {
@@ -314,4 +315,54 @@ test('Preferences', function(t) {
         t.ok(setGlobalPref.calledWith('backgroundColor', 'FF000000'), 'sets the preferences');
         t.end();
     });
+});
+
+test('Creating IOS Plaform Preferences', function(t) {
+    readFileStub.restore();
+
+    seymour([], {SEY_IOS_PREFERENCE_sas_api_key: '123456789'}).then(function() {
+        var config = new ConfigParser(config_path);
+
+        t.ok(config.getPlatformPreference('sas_api_key', 'ios')  === '123456789');
+        t.end();
+    });
+    readFileStub.withArgs(config_path).returns(config);
+});
+
+test('Editing IOS Platform Preferences', function(t) {
+    readFileStub.restore();
+
+    seymour([], {SEY_IOS_PREFERENCE_sas_api_key: '987654321'}).then(function() {
+
+        var config = new ConfigParser(config_path);
+    
+        t.ok(config.getPlatformPreference('sas_api_key', 'ios')  === '987654321');
+        t.end();
+    });
+    readFileStub.withArgs(config_path).returns(config);
+});
+
+test('Creating Android Plaform Preferences', function(t) {
+    readFileStub.restore();
+
+    seymour([], {SEY_ANDROID_PREFERENCE_sas_api_key: '123456789'}).then(function() {
+        var config = new ConfigParser(config_path);
+
+        t.ok(config.getPlatformPreference('sas_api_key', 'android')  === '123456789');
+        t.end();
+    });
+    readFileStub.withArgs(config_path).returns(config);
+});
+
+test('Editing Android Platform Preferences', function(t) {
+    readFileStub.restore();
+
+    seymour([], {SEY_ANDROID_PREFERENCE_sas_api_key: '987654321'}).then(function() {
+
+        var config = new ConfigParser(config_path);
+    
+        t.ok(config.getPlatformPreference('sas_api_key', 'android')  === '987654321');
+        t.end();
+    });
+    readFileStub.withArgs(config_path).returns(config);
 });
