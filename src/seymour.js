@@ -24,6 +24,7 @@ var fs              = require('fs');
 var path            = require('path');
 var HooksRunner     = require('cordova-lib/src/hooks/HooksRunner');
 var cordovaUtil     = require('cordova-lib/src/cordova/util');
+var et              = require('elementtree');
 
 function run(args, env)
 {
@@ -114,6 +115,31 @@ function run(args, env)
             config.setGlobalPreference(name, env[envName]);
         });
 
+    Object.keys(env)
+        .filter(function(v) {
+            return v.match(/^SEY_([A-Za-z]+)_PREFERENCE_/);
+        })
+        .forEach(function(envName) {
+            var platform = envName.match(/^SEY_([A-Za-z]+)(?=_)/)[0] //e.g. SEY_IOS
+                                  .replace(/^SEY_/, '') // Remove SEY_
+                                  .toLowerCase();
+
+            var name = envName.replace(/^SEY_([A-Za-z]+)_PREFERENCE_/, '');
+
+            var plat = config.doc.find('platform[@name=\"' + platform + '\"]');
+            if(!plat) {
+                plat = new et.Element('platform', { name: platform });
+                config.doc.getroot().append(plat);
+            }
+
+            var pref = plat.find('preference[@name="' + name + '"]');
+            if (!pref) {
+                pref = new et.Element('preference');
+                pref.attrib.name = name;
+                plat.append(pref);
+            }
+            pref.attrib.value = env[envName];
+        });
 
     config.write();
 
