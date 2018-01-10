@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "cordova-common": "^2.2.1",
-    "cordova-lib": "^8.0.0"
+    "cordova-lib": "^8.0.0",
+    "elementtree": "^0.1.7"
   },
   "devDependencies": {
     "sinon": "^4.1.3",
