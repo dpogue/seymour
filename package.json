@@ -7,6 +7,9 @@
     "url": "https://github.com/dpogue/seymour"
   },
   "author": "Darryl Pogue <darryl@dpogue.ca>",
+  "contributors": [
+    "Sam Evanuk <samevanuk@gmail.com>"
+  ],
   "license": "Apache-2.0",
   "main": "src/seymour.js",
   "bin": "bin/seymour",
