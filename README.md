@@ -105,7 +105,7 @@ This will allow you to set and override preferences globally in config.xml.
 For example, you could specify `SEY_PREFERENCE_backgroundColor=FF0000FF` to
 override the `backgroundColor` preference in config.xml.
 
-### SEY_*_PREFERENCE_*
+### SEY_\*\_PREFERENCE\_\*
 
 This will allow you to set and override platform specific preferences in config.xml.
 
