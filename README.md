@@ -105,6 +105,13 @@ This will allow you to set and override preferences globally in config.xml.
 For example, you could specify `SEY_PREFERENCE_backgroundColor=FF0000FF` to
 override the `backgroundColor` preference in config.xml.
 
+### SEY_*_PREFERENCE_*
+
+This will allow you to set and override platform specific preferences in config.xml.
+
+For example, you could specify `SEY_IOS_PREFERENCE_SasApiKey=123456789` to
+override the `SasApiKey` preference nested in the ios platform in config.xml.
+
 
 Contributing
 ------------
