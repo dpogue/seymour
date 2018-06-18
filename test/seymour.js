@@ -22,6 +22,7 @@ var fs      = require('fs');
 var seymour       = require('../src/seymour');
 var cordova       = require('cordova-lib').cordova;
 var ConfigParser  = require('cordova-common').ConfigParser;
+var CordovaLogger = require('cordova-common').CordovaLogger;
 
 process.env.PWD = __dirname;
 process.chdir(__dirname);
@@ -70,6 +71,10 @@ sinon.stub(cordova, 'findProjectRoot').returns(__dirname);
 var readFileStub = sinon.stub(fs, 'readFileSync');
 readFileStub.withArgs(config_path).returns(config);
 
+var logger = CordovaLogger.get();
+var subscribeStub = sinon.stub(logger, 'subscribe');
+
+
 test('no parameters', function(t) {
     var opts = {
         platforms: [],
@@ -83,6 +88,8 @@ test('no parameters', function(t) {
     return seymour([], {}).then(function(res) {
         t.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
         t.ok(cordova.compile.call.called, 'calls compile');
+
+        t.ok(subscribeStub.called, 'subscribes the logger');
 
         t.end();
     });
