@@ -19,8 +19,8 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "cordova-common": "^2.2.3",
-    "cordova-lib": "^8.0.0",
+    "cordova-common": "nightly",
+    "cordova-lib": "nightly",
     "elementtree": "^0.1.7",
     "loud-rejection": "^1.6.0"
   },
