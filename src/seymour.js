@@ -35,13 +35,13 @@ function run(args, env)
 
         console.log('Seymour ' + pkg.version);
         console.log('Cordova ' + cdvVer);
-        return;
+        return Promise.resolve();
     }
 
 
     var projectRoot = cordova.findProjectRoot();
     if (!projectRoot) {
-        throw new CordovaError('Current working directory is not a Cordova-based project.');
+        return Promise.reject(new CordovaError('Current working directory is not a Cordova-based project.'));
     }
 
     var logger = CordovaLogger.get();
@@ -167,9 +167,6 @@ function run(args, env)
         .then(function() {
             return hooksRunner.fire('after_build', build_opts);
         });
-    })
-    .catch(function(err) {
-        throw err;
     });
 }
 module.exports = run;

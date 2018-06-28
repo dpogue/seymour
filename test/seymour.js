@@ -23,6 +23,7 @@ var seymour       = require('../src/seymour');
 var cordova       = require('cordova-lib').cordova;
 var ConfigParser  = require('cordova-common').ConfigParser;
 var CordovaLogger = require('cordova-common').CordovaLogger;
+var CordovaError  = require('cordova-common').CordovaError;
 
 process.env.PWD = __dirname;
 process.chdir(__dirname);
@@ -50,29 +51,37 @@ test('version', function(t) {
 });
 
 
-test('bad project', function(t) {
-    var stub = sinon.stub(cordova, 'findProjectRoot').returns(null);
-
-    t.throws(function() { seymour([], {}); }, 'throws a CordovaError');
-
-    t.end();
-
-    stub.restore();
-});
-
-
 var config_path = path.join(__dirname, 'config.xml');
 var config = fs.readFileSync(path.join(__dirname, 'testconfig.xml'), 'utf8');
 
 var prepareStub = sinon.stub(cordova.prepare, 'call').resolves(true);
 var compileStub = sinon.stub(cordova.compile, 'call').resolves(true);
 
-sinon.stub(cordova, 'findProjectRoot').returns(__dirname);
+var findRootStub = sinon.stub(cordova, 'findProjectRoot');
 var readFileStub = sinon.stub(fs, 'readFileSync');
+
+findRootStub.returns(__dirname);
 readFileStub.withArgs(config_path).returns(config);
 
 var logger = CordovaLogger.get();
 var subscribeStub = sinon.stub(logger, 'subscribe');
+
+
+test('bad project', function(t) {
+    findRootStub.returns(null);
+
+    return seymour([], {}).then(function(res) {
+        t.fail('expected to reject');
+    })
+    .catch(function(err) {
+        t.ok(err instanceof CordovaError, 'throws a CordovaError');
+
+        findRootStub.returns(__dirname);
+        t.end();
+    });
+
+
+});
 
 
 test('no parameters', function(t) {
@@ -367,7 +376,7 @@ test('Editing Android Platform Preferences', function(t) {
     seymour([], {SEY_ANDROID_PREFERENCE_sas_api_key: '987654321'}).then(function() {
 
         var config = new ConfigParser(config_path);
-    
+
         t.ok(config.getPlatformPreference('sas_api_key', 'android')  === '987654321');
         t.end();
     });
