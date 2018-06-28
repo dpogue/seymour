@@ -19,6 +19,10 @@ var sinon   = require('sinon');
 var path    = require('path');
 var fs      = require('fs');
 
+try {
+    fs = require('fs-extra');
+} catch (e) { }
+
 var seymour       = require('../src/seymour');
 var cordova       = require('cordova-lib').cordova;
 var ConfigParser  = require('cordova-common').ConfigParser;
@@ -351,7 +355,7 @@ test('Editing IOS Platform Preferences', function(t) {
     seymour([], {SEY_IOS_PREFERENCE_sas_api_key: '987654321'}).then(function() {
 
         var config = new ConfigParser(config_path);
-    
+
         t.ok(config.getPlatformPreference('sas_api_key', 'ios')  === '987654321');
         t.end();
     });
