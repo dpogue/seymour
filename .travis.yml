@@ -17,4 +17,4 @@ script:
   - npm test
 
 after_script:
-  - if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then npx tap --coverage-report=text-lcov && npx codecov; fi
+  - if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then npx tap --coverage-report=text-lcov | npx codecov; fi
