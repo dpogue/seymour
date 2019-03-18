@@ -55,7 +55,6 @@ function run(args, env)
         options: {device: true},
         verbose: false,
         silent: false,
-        browserify: true,
         fetch: true
     };
 
@@ -99,12 +98,6 @@ function run(args, env)
     if (env.SEY_BUILD_CONFIG) {
         opts.options.buildConfig = env.SEY_BUILD_CONFIG;
     }
-
-
-    if (env.SEY_NOBROWSERIFY) {
-        opts.browserify = false;
-    }
-
 
     Object.keys(env)
         .filter(function(v) {

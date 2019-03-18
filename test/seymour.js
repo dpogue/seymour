@@ -94,7 +94,6 @@ test('no parameters', function(t) {
         options: {device: true, debug: true},
         verbose: false,
         silent: false,
-        browserify: true,
         fetch: true
     };
 
@@ -115,7 +114,6 @@ test('failing build', function(t) {
         options: {device: true, debug: true},
         verbose: false,
         silent: false,
-        browserify: true,
         fetch: true
     };
 
@@ -166,7 +164,6 @@ test('SEY_VERBOSE', function(t) {
         options: {debug: true, device: true, verbose: true},
         verbose: true,
         silent: false,
-        browserify: true,
         fetch: true
     };
 
@@ -185,7 +182,6 @@ test('SEY_BUILD_PLATFORMS', function(t) {
         options: {device: true, debug: true},
         verbose: false,
         silent: false,
-        browserify: true,
         fetch: true
     };
 
@@ -204,7 +200,6 @@ test('SEY_BUILD_MODE', function(t) {
         options: {device: true, debug: true},
         verbose: false,
         silent: false,
-        browserify: true,
         fetch: true
     };
 
@@ -213,7 +208,6 @@ test('SEY_BUILD_MODE', function(t) {
         options: {device: true, release: true},
         verbose: false,
         silent: false,
-        browserify: true,
         fetch: true
     };
 
@@ -256,30 +250,10 @@ test('SEY_BUILD_CONFIG', function(t) {
         options: {device: true, debug: true, buildConfig: 'build.json'},
         verbose: false,
         silent: false,
-        browserify: true,
         fetch: true
     };
 
     return seymour([], {SEY_BUILD_CONFIG: 'build.json'}).then(function(res) {
-        t.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.compile.call.called, 'calls compile');
-
-        t.end();
-    });
-});
-
-
-test('SEY_NOBROWSERIFY', function(t) {
-    var opts = {
-        platforms: [],
-        options: {device: true, debug: true},
-        verbose: false,
-        silent: false,
-        browserify: false,
-        fetch: true
-    };
-
-    return seymour([], {SEY_NOBROWSERIFY: true}).then(function(res) {
         t.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
         t.ok(cordova.compile.call.called, 'calls compile');
 
