@@ -34,8 +34,8 @@ Seymour requires your Cordova platforms and plugins to be listed in your
 config.xml file. It will effectively run the following:
 
 ```
-cordova prepare --browserify
-cordova build --browserify --device
+cordova prepare
+cordova build --device
 ```
 
 You can control additional behaviour through environment variables.
@@ -92,11 +92,6 @@ This will override the application version defined in config.xml.
 ### SEY_VERBOSE
 
 This will enable verbose logging from the Cordova build commands.
-
-### SEY_NOBROWSERIFY
-
-This will disable passing the `--browserify` flag to the Cordova build
-commands.
 
 ### SEY_PREFERENCE_*
 
