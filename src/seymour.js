@@ -20,7 +20,6 @@ var ConfigParser    = require('cordova-common').ConfigParser;
 var CordovaError    = require('cordova-common').CordovaError;
 var events          = require('cordova-common').events;
 var CordovaLogger   = require('cordova-common').CordovaLogger;
-var fs              = require('fs');
 var path            = require('path');
 var HooksRunner     = require('cordova-lib/src/hooks/HooksRunner');
 var cordovaUtil     = require('cordova-lib/src/cordova/util');
