@@ -1,6 +1,10 @@
 Seymour Changelog
 =================
 
+### v4.0.1
+
+* Fix the `.git` folder accidentally included in the published v4.0.0 package
+
 ### v4.0.0
 
 * Update to cordova-lib@9.0.0 and cordova-common@3.1.0

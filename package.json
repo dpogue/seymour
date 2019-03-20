@@ -1,6 +1,6 @@
 {
   "name": "seymour",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "A build helper for Apache Cordova projects.",
   "repository": {
     "type": "git",
