@@ -14,6 +14,7 @@
   "main": "src/seymour.js",
   "bin": "bin/seymour",
   "scripts": {
+    "lint": "eslint .",
     "test": "tap test/*.js",
     "preversion": "npm test",
     "postversion": "git push && git push --tags"
@@ -25,6 +26,7 @@
     "loud-rejection": "^2.1.0"
   },
   "devDependencies": {
+    "eslint": "^5.16.0",
     "sinon": "^7.3.2",
     "tap": "^14.1.8"
   },
