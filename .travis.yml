@@ -10,9 +10,9 @@ git:
   depth: 10
 
 node_js:
-  - "6"
   - "8"
   - "10"
+  - "12"
 
 after_install:
   - npm install --no-save codecov

@@ -14,18 +14,22 @@
   "main": "src/seymour.js",
   "bin": "bin/seymour",
   "scripts": {
-    "test": "tap test/*.js -Rspec --cov --100",
+    "test": "tap test/*.js",
     "preversion": "npm test",
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
     "cordova-common": "^3.1.0",
-    "cordova-lib": "^9.0.0",
+    "cordova-lib": "^9.0.1",
     "elementtree": "^0.1.7",
-    "loud-rejection": "^2.0.0"
+    "loud-rejection": "^2.1.0"
   },
   "devDependencies": {
-    "sinon": "^7.2.7",
-    "tap": "^12.6.0"
+    "sinon": "^7.3.2",
+    "tap": "^13.1.1"
+  },
+  "tap": {
+    "check-coverage": true,
+    "reporter": "spec"
   }
 }
