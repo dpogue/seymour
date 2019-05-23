@@ -267,6 +267,8 @@ test('SEY_APP_ID', function(t) {
 
     seymour([], {SEY_APP_ID: 'com.example.app.id'}).then(function() {
         t.ok(setID.calledWith('com.example.app.id'), 'sets the application id');
+
+        setID.restore();
         t.end();
     });
 });
@@ -277,6 +279,8 @@ test('SEY_APP_NAME', function(t) {
 
     seymour([], {SEY_APP_NAME: 'MyApp'}).then(function() {
         t.ok(setName.calledWith('MyApp'), 'sets the application name');
+
+        setName.restore();
         t.end();
     });
 });
@@ -287,6 +291,8 @@ test('SEY_APP_SHORTNAME', function(t) {
 
     seymour([], {SEY_APP_SHORTNAME: 'MyApp'}).then(function() {
         t.ok(setShortName.calledWith('MyApp'), 'sets the display name');
+
+        setShortName.restore();
         t.end();
     });
 });
@@ -297,6 +303,8 @@ test('SEY_APP_VERSION', function(t) {
 
     seymour([], {SEY_APP_VERSION: '1.2.3-qa'}).then(function() {
         t.ok(setVer.calledWith('1.2.3-qa'), 'sets the application version');
+
+        setVer.restore();
         t.end();
     });
 });
@@ -307,6 +315,8 @@ test('Preferences', function(t) {
 
     seymour([], {SEY_PREFERENCE_backgroundColor: 'FF000000'}).then(function() {
         t.ok(setGlobalPref.calledWith('backgroundColor', 'FF000000'), 'sets the preferences');
+
+        setGlobalPref.restore();
         t.end();
     });
 });
@@ -359,4 +369,23 @@ test('Editing Android Platform Preferences', function(t) {
         t.end();
     });
     readFileStub.withArgs(config_path).returns(config);
+});
+
+
+test('config-only mode', function(t) {
+    prepareStub.reset();
+    compileStub.reset();
+
+    var setID = sinon.spy(ConfigParser.prototype, 'setPackageName');
+
+    seymour(['node', 'seymour', '--config-only'], {SEY_APP_ID: 'com.example.app.id'}).then(function() {
+        t.ok(setID.calledWith('com.example.app.id'), 'sets the application id');
+
+        t.notOk(cordova.prepare.call.called, 'calls prepare');
+        t.notOk(cordova.compile.call.called, 'calls compile');
+
+        setID.restore();
+
+        t.end();
+    });
 });
