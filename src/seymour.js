@@ -135,6 +135,12 @@ function run(args, env)
 
     config.write();
 
+    if (args.indexOf('--config-only') !== -1) {
+        // Exit without building if we've been asked to only update the config
+        return Promise.resolve();
+    }
+
+
     var base_opts = JSON.stringify(opts);
 
     var prep_opts = JSON.parse(base_opts);
