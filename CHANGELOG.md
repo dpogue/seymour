@@ -1,6 +1,10 @@
 Seymour Changelog
 =================
 
+### v4.1.0
+
+* Add a `--config-only` flag to update the config.xml file, but skip building
+
 ### v4.0.1
 
 * Fix the `.git` folder accidentally included in the published v4.0.0 package

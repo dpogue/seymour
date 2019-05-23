@@ -40,6 +40,9 @@ cordova build --device
 
 You can control additional behaviour through environment variables.
 
+To update the config.xml file without running a build, you can run Seymour with
+the `--config-only` flag.
+
 ### Future Features
 
 * Collect the resulting build artefacts into a top-level `output` directory
