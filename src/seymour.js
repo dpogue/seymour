@@ -25,18 +25,14 @@ var HooksRunner     = require('cordova-lib/src/hooks/HooksRunner');
 var cordovaUtil     = require('cordova-lib/src/cordova/util');
 var et              = require('elementtree');
 
-function run(args, env)
-{
-    if (args.indexOf('-v') !== -1 ||
-        args.indexOf('--version') !== -1)
-    {
+function run(args, env) {
+    if (args.indexOf('-v') !== -1 || args.indexOf('--version') !== -1) {
         var cdvVer = require('cordova-lib/package').version;
 
         console.log('Seymour ' + pkg.version);
         console.log('Cordova ' + cdvVer);
         return Promise.resolve();
     }
-
 
     var projectRoot = cordova.findProjectRoot();
     if (!projectRoot) {
@@ -83,12 +79,12 @@ function run(args, env)
     if (env.SEY_BUILD_PLATFORMS) {
         opts.platforms = env.SEY_BUILD_PLATFORMS
                         .split(',')
-                        .map(function(p) { return p.toLowerCase(); });
+                        .map(function(p) {
+                          return p.toLowerCase();
+                        });
     }
 
-    if (env.SEY_BUILD_MODE &&
-        env.SEY_BUILD_MODE.toLowerCase() === 'release')
-    {
+    if (env.SEY_BUILD_MODE && env.SEY_BUILD_MODE.toLowerCase() === 'release') {
         opts.options.release = true;
     } else {
         opts.options.debug = true;
