@@ -1,6 +1,14 @@
 Seymour Changelog
 =================
 
+### v4.2.0
+
+* Update to cordova-common@3.2.0
+* **CAUTION:** Trying to add a platform preference to a platform that does not
+  exist in config.xml will now throw an error
+* Add support for `SEY_BUILD_NUMBER` to set the build version number (not the
+  application version)
+
 ### v4.1.0
 
 * Add a `--config-only` flag to update the config.xml file, but skip building
