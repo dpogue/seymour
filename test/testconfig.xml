@@ -9,4 +9,10 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
+
+    <platform name="ios">
+    </platform>
+
+    <platform name="android">
+    </platform>
 </widget>

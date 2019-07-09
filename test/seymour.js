@@ -262,6 +262,20 @@ test('SEY_BUILD_CONFIG', function(t) {
 });
 
 
+test('SEY_BUILD_NUMBER', function(t) {
+    readFileStub.restore();
+
+    seymour([], {SEY_BUILD_NUMBER: 234}).then(function() {
+        var config = new ConfigParser(config_path);
+
+        t.ok(config.android_versionCode()  === '234', 'sets the android version code');
+        t.ok(config.ios_CFBundleVersion()  === '234', 'sets the iOS bundle version');
+        t.end();
+    });
+    readFileStub.withArgs(config_path).returns(config);
+});
+
+
 test('SEY_APP_ID', function(t) {
     var setID = sinon.spy(ConfigParser.prototype, 'setPackageName');
 
@@ -321,54 +335,15 @@ test('Preferences', function(t) {
     });
 });
 
-test('Creating IOS Plaform Preferences', function(t) {
-    readFileStub.restore();
+test('Platform Preferences', function(t) {
+    var setPlatformPref = sinon.spy(ConfigParser.prototype, 'setPlatformPreference');
 
     seymour([], {SEY_IOS_PREFERENCE_sas_api_key: '123456789'}).then(function() {
-        var config = new ConfigParser(config_path);
+        t.ok(setPlatformPref.calledWith('sas_api_key', 'ios', '123456789'), 'sets the preferences');
 
-        t.ok(config.getPlatformPreference('sas_api_key', 'ios')  === '123456789');
+        setPlatformPref.restore();
         t.end();
     });
-    readFileStub.withArgs(config_path).returns(config);
-});
-
-test('Editing IOS Platform Preferences', function(t) {
-    readFileStub.restore();
-
-    seymour([], {SEY_IOS_PREFERENCE_sas_api_key: '987654321'}).then(function() {
-
-        var config = new ConfigParser(config_path);
-
-        t.ok(config.getPlatformPreference('sas_api_key', 'ios')  === '987654321');
-        t.end();
-    });
-    readFileStub.withArgs(config_path).returns(config);
-});
-
-test('Creating Android Plaform Preferences', function(t) {
-    readFileStub.restore();
-
-    seymour([], {SEY_ANDROID_PREFERENCE_sas_api_key: '123456789'}).then(function() {
-        var config = new ConfigParser(config_path);
-
-        t.ok(config.getPlatformPreference('sas_api_key', 'android')  === '123456789');
-        t.end();
-    });
-    readFileStub.withArgs(config_path).returns(config);
-});
-
-test('Editing Android Platform Preferences', function(t) {
-    readFileStub.restore();
-
-    seymour([], {SEY_ANDROID_PREFERENCE_sas_api_key: '987654321'}).then(function() {
-
-        var config = new ConfigParser(config_path);
-
-        t.ok(config.getPlatformPreference('sas_api_key', 'android')  === '987654321');
-        t.end();
-    });
-    readFileStub.withArgs(config_path).returns(config);
 });
 
 

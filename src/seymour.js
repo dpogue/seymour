@@ -94,6 +94,20 @@ function run(args, env) {
         opts.options.buildConfig = env.SEY_BUILD_CONFIG;
     }
 
+    if (env.SEY_BUILD_NUMBER) {
+        var attrs = [
+            'android-versionCode',
+            'ios-CFBundleVersion',
+            'osx-CFBundleVersion'
+            // We don't set the Windows version because that's required to be a
+            // 4-digit version
+        ];
+
+        attrs.forEach(function(attr) {
+            config.doc.getroot().attrib[attr] = env.SEY_BUILD_NUMBER;
+        });
+    }
+
     Object.keys(env)
         .filter(function(v) {
             return v.match(/^SEY_PREFERENCE_/);
@@ -108,25 +122,11 @@ function run(args, env) {
             return v.match(/^SEY_([A-Za-z]+)_PREFERENCE_/);
         })
         .forEach(function(envName) {
+            var name = envName.replace(/^SEY_([A-Za-z]+)_PREFERENCE_/, '');
             var platform = envName.match(/^SEY_([A-Za-z]+)(?=_)/)[0] //e.g. SEY_IOS
                                   .replace(/^SEY_/, '') // Remove SEY_
                                   .toLowerCase();
-
-            var name = envName.replace(/^SEY_([A-Za-z]+)_PREFERENCE_/, '');
-
-            var plat = config.doc.find('platform[@name=\"' + platform + '\"]');
-            if(!plat) {
-                plat = new et.Element('platform', { name: platform });
-                config.doc.getroot().append(plat);
-            }
-
-            var pref = plat.find('preference[@name="' + name + '"]');
-            if (!pref) {
-                pref = new et.Element('preference');
-                pref.attrib.name = name;
-                plat.append(pref);
-            }
-            pref.attrib.value = env[envName];
+            config.setPlatformPreference(name, platform, env[envName]);
         });
 
     config.write();
