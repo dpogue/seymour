@@ -5,7 +5,8 @@ Seymour
   <img alt="" width="481" src="https://raw.githubusercontent.com/dpogue/seymour/master/seymour.png">
 </p>
 
-Seymour is a build helper for [Apache Cordova](http://cordova.io) projects.
+Seymour is a build helper for [Apache Cordova](https://cordova.apache.org)
+projects.
 
 It takes configuration from environment variables, making it ideal for use in
 continuous integration environments with a matrix of platforms and build types.
@@ -75,6 +76,13 @@ See the following Cordova documentation for JSON options:
 * [Android](http://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#using-buildjson)
 * [iOS](http://cordova.apache.org/docs/en/latest/guide/platforms/ios/index.html#using-buildjson)
 * [Windows](http://cordova.apache.org/docs/en/latest/guide/platforms/win8/index.html#signing-an-app)
+
+### SEY_BUILD_NUMBER
+
+This will override the build version number (not the application version)
+defined in config.xml.
+
+This corresponds to the iOS `CFBundleVersion` and the Android `versionCode`.
 
 ### SEY_APP_NAME
 
