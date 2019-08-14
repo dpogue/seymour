@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - '*'
+
+jobs:
+  eslint:
+    name: 'ESLint'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Use Node.js 12
+        uses: actions/setup-node@v1
+        with:
+          version: 12
+
+      - name: npm install
+        run: npm install
+
+      - name: ESLint
+        uses: dpogue/eslint-check-action@dev
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
