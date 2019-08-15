@@ -158,7 +158,8 @@ function run(args, env) {
         .then(function() {
             return cordova.compile.call(null, build_opts);
         })
-        .then(function() {
+        .then(function()
+            {
             return hooksRunner.fire('after_build', build_opts);
         });
     });
