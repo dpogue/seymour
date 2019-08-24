@@ -21,9 +21,31 @@ jobs:
           version: 12
 
       - name: npm install
-        run: npm install
+        run: npm ci
 
       - name: ESLint
         uses: dpogue/eslint-check-action@dev2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    name: NodeJS ${{ matrix.node_version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node_version: [8, 10, 12]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Use Node.js ${{ matrix.node_version }}
+        uses: actions/setup-node@v1
+        with:
+          version: ${{ matrix.node_version }}
+
+      - name: npm install
+        run: npm ci
+
+      - name: npm test
+        run: npm test
