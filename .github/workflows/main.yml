@@ -24,7 +24,7 @@ jobs:
         run: npm ci
 
       - name: ESLint
-        uses: dpogue/eslint-check-action@dev2
+        uses: dpogue/eslint-check-action@dev
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
