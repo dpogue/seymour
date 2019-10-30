@@ -10,23 +10,19 @@ on:
 
 jobs:
   eslint:
-    name: 'ESLint'
+    name: 'Lint'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
 
-      - name: Use Node.js 12
+      - name: Use Node.js
         uses: actions/setup-node@v1
-        with:
-          version: 12
 
       - name: npm install
         run: npm ci
 
-      - name: ESLint
-        uses: dpogue/eslint-check-action@dev
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: npm test
+        run: npm run lint
 
   test:
     name: NodeJS ${{ matrix.node_version }} on ${{ matrix.os }}
@@ -42,7 +38,7 @@ jobs:
       - name: Use Node.js ${{ matrix.node_version }}
         uses: actions/setup-node@v1
         with:
-          version: ${{ matrix.node_version }}
+          node_version: ${{ matrix.node_version }}
 
       - name: npm install
         run: npm ci

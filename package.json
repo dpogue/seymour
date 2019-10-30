@@ -14,7 +14,7 @@
   "main": "src/seymour.js",
   "bin": "bin/seymour",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint -f compact .",
     "test": "tap test/*.js",
     "preversion": "npm test",
     "postversion": "git push && git push --tags"
