@@ -20,15 +20,15 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "cordova-common": "^3.2.0",
+    "cordova-common": "^3.2.1",
     "cordova-lib": "^9.0.1",
     "elementtree": "^0.1.7",
-    "loud-rejection": "^2.1.0"
+    "loud-rejection": "^2.2.0"
   },
   "devDependencies": {
-    "eslint": "^6.0.1",
-    "sinon": "^7.3.2",
-    "tap": "^14.1.8"
+    "eslint": "^6.8.0",
+    "sinon": "^7.5.0",
+    "tap": "^14.10.5"
   },
   "tap": {
     "check-coverage": true,
