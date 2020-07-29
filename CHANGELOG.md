@@ -1,6 +1,12 @@
 Seymour Changelog
 =================
 
+### v5.0.0
+
+* **BREAKING:** Drop support for nodeJS 8.x and 10.x
+* Update to cordova-common@4.0.2
+* Update to cordova-lib@10.0.0
+
 ### v4.2.0
 
 * Update to cordova-common@3.2.0
