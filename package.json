@@ -8,7 +8,8 @@
   },
   "author": "Darryl Pogue <darryl@dpogue.ca>",
   "contributors": [
-    "Sam Evanuk <samevanuk@gmail.com>"
+    "Sam Evanuk <samevanuk@gmail.com>",
+    "Infacto <infacto@tuta.io>"
   ],
   "license": "Apache-2.0",
   "main": "src/seymour.js",
