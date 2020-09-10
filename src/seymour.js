@@ -129,6 +129,33 @@ function run(args, env) {
             config.setPlatformPreference(name, platform, env[envName]);
         });
 
+    var needToBeUpdated = new Map();
+    Object.keys(env)
+        .filter(function (v) {
+            return v.match(/^SEY_PLUGIN_/);
+        })
+        .forEach(function (envName) {
+            var name = envName.match(/^SEY_PLUGIN_([A-Za-z\-]+)/, "")[1];
+            var variable = envName.match(/^SEY_PLUGIN_[A-Za-z\-]+_(\S*)$/)[1];
+            var plugin = config.getPlugin(name);
+
+            if (plugin) {
+                if (!needToBeUpdated.has(name)) {
+                    needToBeUpdated.set(name, plugin);
+                }
+
+                needToBeUpdated.get(name).variables[variable] = env[envName];
+            }
+        });
+
+    needToBeUpdated.forEach(function (value, key) {
+        config.removePlugin(key);
+        var attributes = {};
+        attributes.name = value.name;
+        attributes.spec = value.spec;
+        config.addPlugin(attributes, value.variables);
+    });
+
     config.write();
 
     if (args.indexOf('--config-only') !== -1) {
