@@ -23,6 +23,11 @@ jobs:
 
       - name: eslint
         run: npm run lint
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: javascript
 
   test:
     name: Test NodeJS ${{ matrix.node-version }} on ${{ matrix.os }}
@@ -44,3 +49,6 @@ jobs:
         run: npm cit
         env:
             CI: true
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
