@@ -23,6 +23,22 @@ jobs:
 
       - name: eslint
         run: npm run lint
+        
+      - name: Checkout repository
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+        
+      - run: git checkout HEAD^2
+        if: ${{ github.event_name == 'pull_request' }}
+        
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
 
 
   test:
@@ -35,12 +51,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
 
-      - run: git checkout HEAD^2
-        if: ${{ github.event_name == 'pull_request' }}
-        
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2-beta
         with:
@@ -51,10 +62,3 @@ jobs:
         env:
             CI: true
             
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: javascript
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
