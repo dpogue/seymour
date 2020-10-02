@@ -35,7 +35,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
 
+      - run: git checkout HEAD^2
+        if: ${{ github.event_name == 'pull_request' }}
+        
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2-beta
         with:
