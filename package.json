@@ -21,13 +21,12 @@
   "scripts": {
     "lint": "eslint .",
     "test": "tap test/*.js",
-    "preversion": "npm test",
+    "preversion": "npm run lint && npm test",
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
     "cordova-common": "^4.0.2",
     "cordova-lib": "^10.0.0",
-    "elementtree": "^0.1.7",
     "loud-rejection": "^2.2.0"
   },
   "devDependencies": {
