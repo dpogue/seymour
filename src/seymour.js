@@ -23,7 +23,6 @@ var CordovaLogger   = require('cordova-common').CordovaLogger;
 var path            = require('path');
 var HooksRunner     = require('cordova-lib/src/hooks/HooksRunner');
 var cordovaUtil     = require('cordova-lib/src/cordova/util');
-var et              = require('elementtree');
 
 function run(args, env) {
     if (args.indexOf('-v') !== -1 || args.indexOf('--version') !== -1) {
