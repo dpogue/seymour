@@ -346,7 +346,6 @@ test('Platform Preferences', function(t) {
     });
 });
 
-
 test('config-only mode', function(t) {
     prepareStub.reset();
     compileStub.reset();
@@ -364,3 +363,31 @@ test('config-only mode', function(t) {
         t.end();
     });
 });
+
+test('specific-config', function(t) {
+    readFileStub.restore();
+    seymour(['--config-only']
+    , {
+        "SEY_PLUGIN_cordova-plugin-aliyun-push_APP_KEY": "28",
+        "SEY_PLUGIN_cordova-plugin-aliyun-push_APP_SECRET": "78xx",
+        "SEY_PLUGIN_cordova-plugin-aliyun-push_MIID": "288x",
+        "SEY_PLUGIN_cordova-plugin-aliyun-push_MIKEY": "54x",
+        "SEY_PLUGIN_cordova-plugin-aliyun-push_GCMSENDID": " ",
+        "SEY_PLUGIN_cordova-plugin-aliyun-push_GCMAPPID": " ",
+        "SEY_PLUGIN_cordova-plugin-aliyun-push-xx_GCMAPPID": " ",
+        "SEY_PLUGIN_cordova-plugin-aliyun-push_GCMAPPIDXXX": " "
+    }).then(function() {
+        var config = new ConfigParser(config_path);
+        t.isEqual(config.getPlugin('cordova-plugin-aliyun-push').spec, '1.2.0');
+        t.ok(config.getPlugin('cordova-plugin-aliyun-push').variables.APP_KEY);
+        t.isEqual(config.getPlugin('cordova-plugin-aliyun-push').variables.APP_SECRET, '78xx');
+        t.isEqual(config.getPlugin('cordova-plugin-aliyun-push').variables.MIID, '288x');
+        t.isEqual(config.getPlugin('cordova-plugin-aliyun-push').variables.MIKEY, '54x');
+        t.isEqual(config.getPlugin('cordova-plugin-aliyun-push').variables.GCMSENDID, ' ');
+        t.isEqual(config.getPlugin('cordova-plugin-aliyun-push').variables.GCMAPPID, ' ');
+        t.ok(config.getPlugin('cordova-plugin-aliyun-push-xx') === undefined);
+        t.doesNotHave(config.getPlugin('cordova-plugin-aliyun-push').variables.GCMAPPIDXXX);
+        t.end();
+    });
+});
+

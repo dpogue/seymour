@@ -9,10 +9,19 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
-
     <platform name="ios">
     </platform>
-
     <platform name="android">
     </platform>
+    <plugin name="cordova-plugin-abi-filter" spec="1.2.0">
+        <variable name="ABI_FILTER" value="armeabi-v7a" />
+    </plugin>
+    <plugin name="cordova-plugin-aliyun-push" spec="1.2.0">
+        <variable name="APP_KEY" value="xxx" />
+        <variable name="APP_SECRET" value="xxx" />
+        <variable name="MIID" value="xxxxxxxx" />
+        <variable name="MIKEY" value="xxxxxxxxxx" />
+        <variable name="GCMSENDID" value="xxxxxxxxxx" />
+        <variable name="GCMAPPID" value="xxxxxxxxxxx" />
+    </plugin>
 </widget>
