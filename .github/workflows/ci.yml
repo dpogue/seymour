@@ -1,9 +1,12 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
-    - '*'
+      - '*'
   schedule:
     - cron: '10 5 * * 0'
 
@@ -11,12 +14,16 @@ jobs:
   eslint:
     name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Use Node.js latest
         uses: actions/setup-node@v2
+        with:
+          cache: npm
 
       - name: npm install
         run: npm ci
@@ -38,7 +45,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [12, 14, 16]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
@@ -48,8 +55,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
 
       - name: npm install and test
         run: npm cit
         env:
-            CI: true
+          CI: true
