@@ -55,7 +55,7 @@ Configuration
 The following environment variables will be used by Seymour to alter the
 resulting build:
 
-### SEY_BUILD_TYPE
+### SEY_BUILD_MODE
 
 * **Valid options:** `debug`, `release`
 * **Default value:** `debug`
