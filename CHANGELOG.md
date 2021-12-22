@@ -1,6 +1,11 @@
 Seymour Changelog
 =================
 
+### v6.0.0
+
+* Update to cordova-lib@11.0.0
+* Fix `SEY_BUILD_MODE` documentation (Thanks @MikeDimmickMnetics)
+
 ### v5.0.0
 
 * **BREAKING:** Drop support for nodeJS 8.x and 10.x
