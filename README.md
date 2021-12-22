@@ -2,7 +2,7 @@ Seymour
 =======
 
 <p align="center">
-  <img alt="" width="481" src="https://raw.githubusercontent.com/dpogue/seymour/master/seymour.png">
+  <img alt="" width="481" src="https://raw.githubusercontent.com/dpogue/seymour/main/seymour.png">
 </p>
 
 Seymour is a build helper for [Apache Cordova](https://cordova.apache.org)
