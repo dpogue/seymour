@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "eslint": "^8.0.0",
-    "sinon": "^13.0.0",
+    "sinon": "^14.0.0",
     "tap": "^16.0.0"
   },
   "tap": {
