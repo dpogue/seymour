@@ -25,7 +25,7 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "cordova-common": "^4.0.2",
+    "cordova-common": "^5.0.0",
     "cordova-lib": "^11.0.0",
     "loud-rejection": "^2.2.0"
   },
