@@ -129,5 +129,5 @@ Please note that this project is released with a [Contributor Code of Conduct](h
 Licence
 -------
 
-Copyright © 2015-2020 Darryl Pogue & Ayogo Health Inc.  
+Copyright © 2015-2023 Darryl Pogue & Ayogo Health Inc.  
 Licensed under the Apache 2.0 Licence.
