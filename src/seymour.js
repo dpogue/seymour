@@ -14,44 +14,49 @@
  * limitations under the License.
  */
 
-var pkg             = require('../package.json');
-var cordova         = require('cordova-lib').cordova;
-var ConfigParser    = require('cordova-common').ConfigParser;
-var CordovaError    = require('cordova-common').CordovaError;
-var events          = require('cordova-common').events;
-var CordovaLogger   = require('cordova-common').CordovaLogger;
-var path            = require('path');
-var HooksRunner     = require('cordova-lib/src/hooks/HooksRunner');
-var cordovaUtil     = require('cordova-lib/src/cordova/util');
+import cordovaLib from "cordova-lib";
+import cordovaCommon from "cordova-common";
+import path from "path";
+import HooksRunner from "cordova-lib/src/hooks/HooksRunner.js";
+import cordovaUtil from "cordova-lib/src/cordova/util.js";
+import { createRequire } from "module";
 
-function run(args, env) {
-    if (args.indexOf('-v') !== -1 || args.indexOf('--version') !== -1) {
-        var cdvVer = require('cordova-lib/package').version;
+const { ConfigParser, CordovaError, events, CordovaLogger } = cordovaCommon;
+const { cordova } = cordovaLib;
 
-        console.log('Seymour ' + pkg.version);
-        console.log('Cordova ' + cdvVer);
+export default function run(args, env) {
+    if (args.indexOf("-v") !== -1 || args.indexOf("--version") !== -1) {
+        const require = createRequire(import.meta.url);
+        const cdv = require("cordova-lib/package.json");
+        const pkg = require("../package.json");
+        console.log(`Seymour ${pkg.version}`);
+        console.log(`Cordova ${cdv.version}`);
+
         return Promise.resolve();
     }
 
-    var projectRoot = cordova.findProjectRoot();
+    const projectRoot = cordova.findProjectRoot();
     if (!projectRoot) {
-        return Promise.reject(new CordovaError('Current working directory is not a Cordova-based project.'));
+        return Promise.reject(
+            new CordovaError(
+                "Current working directory is not a Cordova-based project."
+            )
+        );
     }
 
-    var logger = CordovaLogger.get();
+    const logger = CordovaLogger.get();
     logger.subscribe(events);
 
-    var configPath = path.join(projectRoot, 'config.xml');
-    var config = new ConfigParser(configPath);
+    const configPath = path.join(projectRoot, "config.xml");
+    const config = new ConfigParser(configPath);
 
-    var opts = {
+    const opts = {
         platforms: [],
-        options: {device: true},
+        options: { device: true },
         verbose: false,
         silent: false,
-        fetch: true
+        fetch: true,
     };
-
 
     if (env.SEY_APP_ID) {
         config.setPackageName(env.SEY_APP_ID);
@@ -72,18 +77,16 @@ function run(args, env) {
     if (env.SEY_VERBOSE) {
         opts.verbose = true;
         opts.options.verbose = true;
-        logger.setLevel('verbose');
+        logger.setLevel("verbose");
     }
 
     if (env.SEY_BUILD_PLATFORMS) {
-        opts.platforms = env.SEY_BUILD_PLATFORMS
-                        .split(',')
-                        .map(function(p) {
-                          return p.toLowerCase();
-                        });
+        opts.platforms = env.SEY_BUILD_PLATFORMS.split(",").map(function (p) {
+            return p.toLowerCase();
+        });
     }
 
-    if (env.SEY_BUILD_MODE && env.SEY_BUILD_MODE.toLowerCase() === 'release') {
+    if (env.SEY_BUILD_MODE && env.SEY_BUILD_MODE.toLowerCase() === "release") {
         opts.options.release = true;
     } else {
         opts.options.debug = true;
@@ -94,72 +97,71 @@ function run(args, env) {
     }
 
     if (env.SEY_BUILD_NUMBER) {
-        var attrs = [
-            'android-versionCode',
-            'ios-CFBundleVersion',
-            'osx-CFBundleVersion'
+        const attrs = [
+            "android-versionCode",
+            "ios-CFBundleVersion",
+            "osx-CFBundleVersion",
             // We don't set the Windows version because that's required to be a
             // 4-digit version
         ];
 
-        attrs.forEach(function(attr) {
+        attrs.forEach(function (attr) {
             config.doc.getroot().attrib[attr] = env.SEY_BUILD_NUMBER;
         });
     }
 
     Object.keys(env)
-        .filter(function(v) {
+        .filter(function (v) {
             return v.match(/^SEY_PREFERENCE_/);
         })
-        .forEach(function(envName) {
-            var name = envName.replace(/^SEY_PREFERENCE_/, '');
+        .forEach(function (envName) {
+            const name = envName.replace(/^SEY_PREFERENCE_/, "");
             config.setGlobalPreference(name, env[envName]);
         });
 
     Object.keys(env)
-        .filter(function(v) {
+        .filter(function (v) {
             return v.match(/^SEY_([A-Za-z]+)_PREFERENCE_/);
         })
-        .forEach(function(envName) {
-            var name = envName.replace(/^SEY_([A-Za-z]+)_PREFERENCE_/, '');
-            var platform = envName.match(/^SEY_([A-Za-z]+)(?=_)/)[0] //e.g. SEY_IOS
-                                  .replace(/^SEY_/, '') // Remove SEY_
-                                  .toLowerCase();
+        .forEach(function (envName) {
+            const name = envName.replace(/^SEY_([A-Za-z]+)_PREFERENCE_/, "");
+            const platform = envName
+                .match(/^SEY_([A-Za-z]+)(?=_)/)[0] //e.g. SEY_IOS
+                .replace(/^SEY_/, "") // Remove SEY_
+                .toLowerCase();
             config.setPlatformPreference(name, platform, env[envName]);
         });
 
     config.write();
 
-    if (args.indexOf('--config-only') !== -1) {
+    if (args.indexOf("--config-only") !== -1) {
         // Exit without building if we've been asked to only update the config
         return Promise.resolve();
     }
 
+    const base_opts = JSON.stringify(opts);
 
-    var base_opts = JSON.stringify(opts);
+    const prep_opts = JSON.parse(base_opts);
 
-    var prep_opts = JSON.parse(base_opts);
-
-    return cordova.prepare.call(null, prep_opts)
-    .then(function() {
+    return cordova.prepare.call(null, prep_opts).then(function () {
         // Some plugins (Crosswalk *shakefist*) add a bunch of their own stuff
         // to config.xml that overrides user-defined variables.
         // We re-save the config.xml file after installing plugins to ensure
         // we have the data that we want and not extra garbage.
         config.write();
 
-        var projectRoot = cordovaUtil.cdProjectRoot();
-        var build_opts = cordovaUtil.preProcessOptions(JSON.parse(base_opts));
+        const projectRoot = cordovaUtil.cdProjectRoot();
+        const build_opts = cordovaUtil.preProcessOptions(JSON.parse(base_opts));
 
-        var hooksRunner = new HooksRunner(projectRoot);
+        const hooksRunner = new HooksRunner(projectRoot);
 
-        return hooksRunner.fire('before_build', build_opts)
-        .then(function() {
-            return cordova.compile.call(null, build_opts);
-        })
-        .then(function() {
-            return hooksRunner.fire('after_build', build_opts);
-        });
+        return hooksRunner
+            .fire("before_build", build_opts)
+            .then(function () {
+                return cordova.compile.call(null, build_opts);
+            })
+            .then(function () {
+                return hooksRunner.fire("after_build", build_opts);
+            });
     });
 }
-module.exports = run;

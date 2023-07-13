@@ -15,19 +15,21 @@
  * limitations under the License.
  */
 
-require('loud-rejection/register');
+import "loud-rejection/register.js";
 
-var events  = require('cordova-common').events;
-var util    = require('util');
-var seymour = require('../src/seymour');
+import cordovaCommon from "cordova-common";
+import util from "util";
+import seymour from "../src/seymour.js";
 
-seymour(process.argv, process.env).catch(function(err) {
+const { events } = cordovaCommon;
+
+seymour(process.argv, process.env).catch(function (err) {
     if (!(err instanceof Error)) {
-        throw new Error('Promise rejected with value: ' + util.inspect(err));
+        throw new Error("Promise rejected with value: " + util.inspect(err));
     }
 
     process.exitCode = err.code || 1;
 
     console.error(err);
-    events.emit('verbose', err.stack);
+    events.emit("verbose", err.stack);
 });

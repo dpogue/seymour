@@ -11,9 +11,12 @@
     "Sam Evanuk <samevanuk@gmail.com>",
     "Infacto <infacto@tuta.io>"
   ],
+  "type": "module",
   "license": "Apache-2.0",
   "main": "src/seymour.js",
-  "bin": "bin/seymour",
+  "bin": {
+    "seymour":"./bin/seymour.js"
+  },
   "files": [
     "bin",
     "src"
