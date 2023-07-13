@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     branches:
-      - '*'
+      - main
   schedule:
     - cron: '10 5 * * 0'
 
@@ -46,7 +46,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [12, 14, 16, 18]
+        node-version: [12, 14, 16, 18, 20]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
