@@ -14,77 +14,78 @@
  * limitations under the License.
  */
 
-var test    = require('tap').test;
-var sinon   = require('sinon');
-var path    = require('path');
-var fs      = require('fs');
-
-try {
-    fs = require('fs-extra');
-} catch (e) { }
-
+var test          = require('node:test');
+var assert        = require('node:assert');
+var fs            = require('node:fs');
+var path          = require('node:path');
 var seymour       = require('../src/seymour');
 var cordova       = require('cordova-lib').cordova;
 var ConfigParser  = require('cordova-common').ConfigParser;
 var CordovaLogger = require('cordova-common').CordovaLogger;
 var CordovaError  = require('cordova-common').CordovaError;
 
+try {
+    fs            = require('fs-extra');
+} catch (e) { }
+
 process.env.PWD = __dirname;
 process.chdir(__dirname);
 
+
 test('version', function(t) {
+    t.mock.method(console, 'log', function() {});
+
     var version = require('../package.json').version;
 
-    var stub = sinon.stub(console, 'log');
+    return Promise.all([
+        t.test('with --version', function() {
+            seymour(['node', 'seymour', '--version'], {});
+            assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
+        }),
 
-    t.test('with --version', function(tt) {
-        seymour(['node', 'seymour', '--version'], {});
-        tt.ok(console.log.firstCall.args[0].match(version), 'prints version');
-        tt.end();
-    });
-
-    t.test('with -v', function(tt) {
-        seymour(['node', 'seymour', '-v'], {});
-        tt.ok(console.log.firstCall.args[0].match(version), 'prints version');
-        tt.end();
-    });
-
-    t.end();
-
-    stub.restore();
+        t.test('with -v', function() {
+            seymour(['node', 'seymour', '-v'], {});
+            assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
+        })
+    ]);
 });
 
 
-var config_path = path.join(__dirname, 'config.xml');
-var config = fs.readFileSync(path.join(__dirname, 'testconfig.xml'), 'utf8');
-
-var prepareStub = sinon.stub(cordova.prepare, 'call').resolves(true);
-var compileStub = sinon.stub(cordova.compile, 'call').resolves(true);
-
-var findRootStub = sinon.stub(cordova, 'findProjectRoot');
-var readFileStub = sinon.stub(fs, 'readFileSync');
-
-findRootStub.returns(__dirname);
-readFileStub.withArgs(config_path).returns(config);
-
-var logger = CordovaLogger.get();
-var subscribeStub = sinon.stub(logger, 'subscribe');
-
-
 test('bad project', function(t) {
-    findRootStub.returns(null);
+    t.mock.method(console, 'log', function() {});
 
-    return seymour([], {}).then(function(res) {
-        t.fail('expected to reject');
-    })
-    .catch(function(err) {
-        t.ok(err instanceof CordovaError, 'throws a CordovaError');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-        findRootStub.returns(__dirname);
-        t.end();
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
 
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
 
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova, 'findProjectRoot', function() {
+        return null;
+    });
+
+    return seymour([], {})
+        .then(function(res) {
+            assert.fail('expected to reject');
+        })
+        .catch(function(err) {
+            assert.ok(err instanceof CordovaError, 'throws a CordovaError');
+        });
 });
 
 
@@ -97,14 +98,45 @@ test('no parameters', function(t) {
         fetch: true
     };
 
-    return seymour([], {}).then(function(res) {
-        t.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.compile.call.called, 'calls compile');
+    t.mock.method(console, 'log', function() {});
 
-        t.ok(subscribeStub.called, 'subscribes the logger');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-        t.end();
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+
+    return seymour([], {})
+        .then(function(res) {
+            var prepareCalls = cordova.prepare.call.mock.calls;
+            assert.strictEqual(prepareCalls.length, 1, 'calls prepare');
+            assert.deepStrictEqual(prepareCalls[0].arguments[1], opts, 'calls prepare with opts');
+            assert.strictEqual(cordova.compile.call.mock.calls.length, 1, 'calls compile');
+
+            assert.strictEqual(logger.subscribe.mock.callCount(), 1, 'subscribes the logger');
+        });
 });
 
 
@@ -117,44 +149,63 @@ test('failing build', function(t) {
         fetch: true
     };
 
-    t.test('prepare', function(t2) {
-        prepareStub.restore();
-        var stub = sinon.stub(cordova.prepare, 'call').rejects();
+    t.mock.method(console, 'log', function() {});
 
-        return seymour([], {}).then(function() {
-            t2.notOk(true, 'resolves');
-        })
-        .catch(function() {
-            t2.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
-        })
-        .then(function() {
-            stub.restore();
-            prepareStub = sinon.stub(cordova.prepare, 'call').resolves(true);
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-            t2.end();
-        });
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
 
-    t.test('compile', function(t2) {
-        compileStub.restore();
-        var stub = sinon.stub(cordova.compile, 'call').rejects();
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
 
-        return seymour([], {}).then(function() {
-            t2.notOk(true, 'resolves');
-        })
-        .catch(function() {
-            t2.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
-            t2.ok(cordova.compile.call.called, 'calls compile');
-        })
-        .then(function() {
-            stub.restore();
-            compileStub = sinon.stub(cordova.compile, 'call').resolves(true);
-
-            t2.end();
-        });
+        return rfs.call(this, f, ...args);
     });
 
-    t.end();
+
+    return Promise.all([
+        t.test('prepare', function(t2) {
+            t2.mock.method(cordova.prepare, 'call', function() {
+                return Promise.reject(new Error(""));
+            });
+
+            return seymour([], {})
+                .then(function() {
+                    assert.fail('resolves');
+                })
+                .catch(function() {
+                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+                });
+        }),
+
+        t.test('compile', function(t2) {
+            t2.mock.method(cordova.prepare, 'call', function() {
+                return Promise.resolve(true);
+            });
+            t2.mock.method(cordova.compile, 'call', function() {
+                return Promise.reject(new Error(""));
+            });
+
+            return seymour([], {})
+                .then(function() {
+                    assert.fail('resolves');
+                })
+                .catch(function() {
+                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+                    assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+                });
+        })
+    ]);
 });
 
 
@@ -167,12 +218,41 @@ test('SEY_VERBOSE', function(t) {
         fetch: true
     };
 
-    seymour([], {SEY_VERBOSE: true}).then(function() {
-        t.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.compile.call.called, 'calls compile');
+    t.mock.method(console, 'log', function() {});
 
-        t.end();
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
+
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+
+    return seymour([], {SEY_VERBOSE: true})
+        .then(function() {
+            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+        });
 });
 
 
@@ -185,12 +265,41 @@ test('SEY_BUILD_PLATFORMS', function(t) {
         fetch: true
     };
 
-    seymour([], {SEY_BUILD_PLATFORMS: "Windows,iOS"}).then(function() {
-        t.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.compile.call.called, 'calls compile');
+    t.mock.method(console, 'log', function() {});
 
-        t.end();
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
+
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+
+    return seymour([], {SEY_BUILD_PLATFORMS: "Windows,iOS"})
+        .then(function() {
+            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+        });
 });
 
 
@@ -211,36 +320,77 @@ test('SEY_BUILD_MODE', function(t) {
         fetch: true
     };
 
-    t.test('unspecified', function(t2) {
-        seymour([], {}).then(function() {
-            t2.ok(cordova.prepare.call.calledWith(null, debug_opts), 'calls prepare with debug=true');
-            t2.ok(cordova.compile.call.called, 'calls compile');
+    t.mock.method(console, 'log', function() {});
 
-            t2.end();
-        });
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
+
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
 
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
 
-    t.test('= "debug"', function(t2) {
-        seymour([], {SEY_BUILD_MODE: "debug"}).then(function() {
-            t2.ok(cordova.prepare.call.calledWith(null, debug_opts), 'calls prepare with debug=true');
-            t2.ok(cordova.compile.call.called, 'calls compile');
-
-            t2.end();
-        });
+        return rfs.call(this, f, ...args);
     });
 
+    return Promise.all([
+        t.test('unspecified', function(t2) {
+            t2.mock.method(cordova.prepare, 'call', function() {
+                return Promise.resolve(true);
+            });
+            t2.mock.method(cordova.compile, 'call', function() {
+                return Promise.resolve(true);
+            });
 
-    t.test('= "release"', function(t2) {
-        seymour([], {SEY_BUILD_MODE: "release"}).then(function() {
-            t2.ok(cordova.prepare.call.calledWith(null, release_opts), 'calls prepare with release=true');
-            t2.ok(cordova.compile.call.called, 'calls compile');
+            return seymour([], {})
+                .then(function() {
+                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
+                    assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+                });
+        }),
 
-            t2.end();
-        });
-    });
 
-    t.end();
+        t.test('= "debug"', function(t2) {
+            t2.mock.method(cordova.prepare, 'call', function() {
+                return Promise.resolve(true);
+            });
+            t2.mock.method(cordova.compile, 'call', function() {
+                return Promise.resolve(true);
+            });
+
+            return seymour([], {SEY_BUILD_MODE: "debug"})
+                .then(function() {
+                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
+                    assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+                });
+        }),
+
+
+        t.test('= "release"', function(t2) {
+            t2.mock.method(cordova.prepare, 'call', function() {
+                return Promise.resolve(true);
+            });
+            t2.mock.method(cordova.compile, 'call', function() {
+                return Promise.resolve(true);
+            });
+
+            return seymour([], {SEY_BUILD_MODE: "release"})
+                .then(function() {
+                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], release_opts, 'calls prepare with release=true');
+                    assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+                });
+        })
+    ]);
 });
 
 
@@ -253,114 +403,364 @@ test('SEY_BUILD_CONFIG', function(t) {
         fetch: true
     };
 
-    return seymour([], {SEY_BUILD_CONFIG: 'build.json'}).then(function(res) {
-        t.ok(cordova.prepare.call.calledWith(null, opts), 'calls prepare');
-        t.ok(cordova.compile.call.called, 'calls compile');
+    t.mock.method(console, 'log', function() {});
 
-        t.end();
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
+
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+
+    return seymour([], {SEY_BUILD_CONFIG: 'build.json'})
+        .then(function(res) {
+            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+        });
 });
 
 
 test('SEY_BUILD_NUMBER', function(t) {
-    readFileStub.restore();
+    var config_path = path.join(__dirname, 'config.xml');
 
-    seymour([], {SEY_BUILD_NUMBER: 234}).then(function() {
-        var config = new ConfigParser(config_path);
+    t.mock.method(console, 'log', function() {});
 
-        t.ok(config.android_versionCode()  === '234', 'sets the android version code');
-        t.ok(config.ios_CFBundleVersion()  === '234', 'sets the iOS bundle version');
-        t.end();
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
+
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
-    readFileStub.withArgs(config_path).returns(config);
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+
+    return seymour([], {SEY_BUILD_NUMBER: 234})
+        .then(function() {
+            fs.readFileSync.mock.restore();
+            var config = new ConfigParser(config_path);
+
+            assert.strictEqual(config.android_versionCode(), '234', 'sets the android version code');
+            assert.strictEqual(config.ios_CFBundleVersion(), '234', 'sets the iOS bundle version');
+        });
 });
 
 
 test('SEY_APP_ID', function(t) {
-    var setID = sinon.spy(ConfigParser.prototype, 'setPackageName');
+    t.mock.method(console, 'log', function() {});
 
-    seymour([], {SEY_APP_ID: 'com.example.app.id'}).then(function() {
-        t.ok(setID.calledWith('com.example.app.id'), 'sets the application id');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-        setID.restore();
-        t.end();
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(ConfigParser.prototype, 'setPackageName');
+
+    return seymour([], {SEY_APP_ID: 'com.example.app.id'})
+        .then(function() {
+            var call = ConfigParser.prototype.setPackageName.mock.calls[0];
+            assert.strictEqual(call.arguments[0], 'com.example.app.id', 'sets the application id');
+        });
 });
 
 
 test('SEY_APP_NAME', function(t) {
-    var setName = sinon.spy(ConfigParser.prototype, 'setName');
+    t.mock.method(console, 'log', function() {});
 
-    seymour([], {SEY_APP_NAME: 'MyApp'}).then(function() {
-        t.ok(setName.calledWith('MyApp'), 'sets the application name');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-        setName.restore();
-        t.end();
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(ConfigParser.prototype, 'setName');
+
+    return seymour([], {SEY_APP_NAME: 'MyApp'})
+        .then(function() {
+            var call = ConfigParser.prototype.setName.mock.calls[0];
+            assert.strictEqual(call.arguments[0], 'MyApp', 'sets the application name');
+        });
 });
 
 
 test('SEY_APP_SHORTNAME', function(t) {
-    var setShortName = sinon.spy(ConfigParser.prototype, 'setShortName');
+    t.mock.method(console, 'log', function() {});
 
-    seymour([], {SEY_APP_SHORTNAME: 'MyApp'}).then(function() {
-        t.ok(setShortName.calledWith('MyApp'), 'sets the display name');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-        setShortName.restore();
-        t.end();
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(ConfigParser.prototype, 'setShortName');
+
+    return seymour([], {SEY_APP_SHORTNAME: 'MyApp'})
+        .then(function() {
+            var call = ConfigParser.prototype.setShortName.mock.calls[0];
+            assert.strictEqual(call.arguments[0], 'MyApp', 'sets the display name');
+        });
 });
 
 
 test('SEY_APP_VERSION', function(t) {
-    var setVer = sinon.spy(ConfigParser.prototype, 'setVersion');
+    t.mock.method(console, 'log', function() {});
 
-    seymour([], {SEY_APP_VERSION: '1.2.3-qa'}).then(function() {
-        t.ok(setVer.calledWith('1.2.3-qa'), 'sets the application version');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-        setVer.restore();
-        t.end();
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(ConfigParser.prototype, 'setVersion');
+
+    return seymour([], {SEY_APP_VERSION: '1.2.3-qa'})
+        .then(function() {
+            var call = ConfigParser.prototype.setVersion.mock.calls[0];
+            assert.strictEqual(call.arguments[0], '1.2.3-qa', 'sets the application version');
+        });
 });
 
 
 test('Preferences', function(t) {
-    var setGlobalPref = sinon.spy(ConfigParser.prototype, 'setGlobalPreference');
+    t.mock.method(console, 'log', function() {});
 
-    seymour([], {SEY_PREFERENCE_backgroundColor: 'FF000000'}).then(function() {
-        t.ok(setGlobalPref.calledWith('backgroundColor', 'FF000000'), 'sets the preferences');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-        setGlobalPref.restore();
-        t.end();
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(ConfigParser.prototype, 'setGlobalPreference');
+
+    return seymour([], { SEY_PREFERENCE_backgroundColor: 'FF000000' })
+        .then(function() {
+            var call = ConfigParser.prototype.setGlobalPreference.mock.calls[0];
+            assert.deepStrictEqual(call.arguments, ['backgroundColor', 'FF000000'], 'sets the preference');
+        });
 });
 
 test('Platform Preferences', function(t) {
-    var setPlatformPref = sinon.spy(ConfigParser.prototype, 'setPlatformPreference');
+    t.mock.method(console, 'log', function() {});
 
-    seymour([], {SEY_IOS_PREFERENCE_sas_api_key: '123456789'}).then(function() {
-        t.ok(setPlatformPref.calledWith('sas_api_key', 'ios', '123456789'), 'sets the preferences');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-        setPlatformPref.restore();
-        t.end();
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
+
+        return es.call(this, f);
     });
+
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
+
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(ConfigParser.prototype, 'setPlatformPreference');
+
+    return seymour([], { SEY_IOS_PREFERENCE_sas_api_key: '123456789' })
+        .then(function() {
+            var call = ConfigParser.prototype.setPlatformPreference.mock.calls[0];
+            assert.deepStrictEqual(call.arguments, ['sas_api_key', 'ios', '123456789'], 'sets the preference');
+        });
 });
 
 
 test('config-only mode', function(t) {
-    prepareStub.reset();
-    compileStub.reset();
+    t.mock.method(console, 'log', function() {});
 
-    var setID = sinon.spy(ConfigParser.prototype, 'setPackageName');
+    var logger = CordovaLogger.get();
+    t.mock.method(logger, 'subscribe', function() {});
 
-    seymour(['node', 'seymour', '--config-only'], {SEY_APP_ID: 'com.example.app.id'}).then(function() {
-        t.ok(setID.calledWith('com.example.app.id'), 'sets the application id');
+    var es = fs.existsSync;
+    t.mock.method(fs, 'existsSync', function(f) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return true;
+        }
 
-        t.notOk(cordova.prepare.call.called, 'calls prepare');
-        t.notOk(cordova.compile.call.called, 'calls compile');
+        return es.call(this, f);
+    });
 
-        setID.restore();
+    var rfs = fs.readFileSync;
+    t.mock.method(fs, 'readFileSync', function(f, ...args) {
+        if (f === path.join(process.cwd(), 'config.xml')) {
+            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
+        }
 
-        t.end();
+        return rfs.call(this, f, ...args);
+    });
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(ConfigParser.prototype, 'setPackageName');
+
+    return seymour(['node', 'seymour', '--config-only'], {SEY_APP_ID: 'com.example.app.id'}).then(function() {
+        var call = ConfigParser.prototype.setPackageName.mock.calls[0];
+        assert.strictEqual(call.arguments[0], 'com.example.app.id', 'sets the application id');
+
+        assert.strictEqual(cordova.prepare.call.mock.calls.length, 0, 'calls prepare');
+        assert.strictEqual(cordova.compile.call.mock.calls.length, 0, 'calls compile');
     });
 });

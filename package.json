@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "lint": "eslint .",
-    "test": "tap test/*.js",
+    "test": "node --test",
     "preversion": "npm run lint && npm test",
     "postversion": "git push && git push --tags"
   },
@@ -30,12 +30,6 @@
     "loud-rejection": "^2.2.0"
   },
   "devDependencies": {
-    "eslint": "^8.0.0",
-    "sinon": "^15.0.0",
-    "tap": "^16.0.0"
-  },
-  "tap": {
-    "check-coverage": true,
-    "reporter": "spec"
+    "eslint": "^8.0.0"
   }
 }

@@ -33,9 +33,9 @@ function run(args, env) {
         return Promise.resolve();
     }
 
-    var projectRoot = cordova.findProjectRoot();
+    var projectRoot = cordova.findProjectRoot(process.cwd());
     if (!projectRoot) {
-        return Promise.reject(new CordovaError('Current working directory is not a Cordova-based project.'));
+        return Promise.reject(new CordovaError('Current working directory is not a Cordova-based project: ' + process.cwd()));
     }
 
     var logger = CordovaLogger.get();
