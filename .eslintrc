@@ -1,5 +1,9 @@
 {
   "root": true,
+  "parserOptions": {
+      "ecmaVersion": "2022",
+      "sourceType": "module"
+  },
   "rules": {
     "brace-style": ["error", "1tbs"],
     "curly": "error",
@@ -16,6 +20,6 @@
     "no-trailing-spaces": "error",
     "prefer-const": "warn",
     "radix": "error",
-    "semi": ["error", "always"],
+    "semi": ["error", "always"]
   }
 }
