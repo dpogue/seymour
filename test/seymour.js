@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 
-var test          = require('node:test');
-var assert        = require('node:assert');
-var fs            = require('node:fs');
-var path          = require('node:path');
-var seymour       = require('../src/seymour');
-var cordova       = require('cordova-lib').cordova;
-var ConfigParser  = require('cordova-common').ConfigParser;
-var CordovaLogger = require('cordova-common').CordovaLogger;
-var CordovaError  = require('cordova-common').CordovaError;
+import test from 'node:test';
+import assert from 'node:assert';
+import node_fs from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import url from 'node:url';
+import cordovaLib from 'cordova-lib';
+import cordovaCommon from 'cordova-common';
+import seymour from 'seymour';
+//import pkgJson from 'seymour/package.json' assert { type: 'json' };
 
+let fs = node_fs;
 try {
-    fs            = require('fs-extra');
+    fs = (await import('fs-extra')).default;
 } catch (e) { }
 
+const { cordova } = cordovaLib;
+const { ConfigParser, CordovaLogger, CordovaError } = cordovaCommon;
+
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 process.env.PWD = __dirname;
 process.chdir(__dirname);
 
@@ -35,7 +41,9 @@ process.chdir(__dirname);
 test('version', function(t) {
     t.mock.method(console, 'log', function() {});
 
-    var version = require('../package.json').version;
+    const require = createRequire(import.meta.url);
+    const pkgJson = require('seymour/package.json');
+    const version = pkgJson.version;
 
     return Promise.all([
         t.test('with --version', function() {

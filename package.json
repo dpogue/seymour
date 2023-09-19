@@ -1,6 +1,7 @@
 {
   "name": "seymour",
   "version": "6.0.3",
+  "type": "module",
   "description": "A build helper for Apache Cordova projects.",
   "repository": {
     "type": "git",
@@ -13,11 +14,15 @@
   ],
   "license": "Apache-2.0",
   "main": "src/seymour.js",
-  "bin": "bin/seymour",
+  "bin": "bin/seymour.js",
   "files": [
     "bin",
     "src"
   ],
+  "exports": {
+    ".": "./src/seymour.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "lint": "eslint .",
     "test": "node --test",
