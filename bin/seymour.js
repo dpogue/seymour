@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import 'loud-rejection/register.js';
 import util from 'node:util';
 import cordovaCommon from 'cordova-common';
 import seymour from 'seymour';
