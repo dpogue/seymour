@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* node:coverage disable */
 
 import test from 'node:test';
 import assert from 'node:assert';

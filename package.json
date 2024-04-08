@@ -24,7 +24,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint",
     "test": "node --test",
     "preversion": "npm run lint && npm test",
     "postversion": "git push && git push --tags"
