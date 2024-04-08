@@ -1,10 +1,9 @@
-{
-  "root": true,
-  "parserOptions": {
-      "ecmaVersion": "2022",
-      "sourceType": "module"
+export default [{
+  languageOptions: {
+    ecmaVersion: 2022,
+    sourceType: "module"
   },
-  "rules": {
+  rules: {
     "brace-style": ["error", "1tbs"],
     "curly": "error",
     "eol-last": ["error", "always"],
@@ -22,4 +21,4 @@
     "radix": "error",
     "semi": ["error", "always"]
   }
-}
+}];
