@@ -17,7 +17,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert';
-import node_fs from 'node:fs';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import url from 'node:url';
@@ -25,11 +25,6 @@ import cordovaLib from 'cordova-lib';
 import cordovaCommon from 'cordova-common';
 import seymour from 'seymour';
 //import pkgJson from 'seymour/package.json' assert { type: 'json' };
-
-let fs = node_fs;
-try {
-    fs = (await import('fs-extra')).default;
-} catch (e) { }
 
 const { cordova } = cordovaLib;
 const { ConfigParser, CordovaLogger, CordovaError } = cordovaCommon;
@@ -39,51 +34,42 @@ process.env.PWD = __dirname;
 process.chdir(__dirname);
 
 
-test('version', function(t) {
-    t.mock.method(console, 'log', function() {});
+test.beforeEach(() => {
+    fs.copyFileSync(path.join(process.cwd(), 'testconfig.xml'), path.join(process.cwd(), 'config.xml'), fs.constants.COPYFILE_EXCL);
+});
 
+test.afterEach(() => {
+    fs.rmSync(path.join(process.cwd(), 'config.xml'));
+});
+
+
+test.mock.method(console, 'log', function() {});
+
+const logger = CordovaLogger.get();
+test.mock.method(logger, 'subscribe', function() {});
+
+
+test('version with --version', function(t) {
     const require = createRequire(import.meta.url);
     const pkgJson = require('seymour/package.json');
     const version = pkgJson.version;
 
-    return Promise.all([
-        t.test('with --version', function() {
-            seymour(['node', 'seymour', '--version'], {});
-            assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
-        }),
+    seymour(['node', 'seymour', '--version'], {});
+    assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
+});
 
-        t.test('with -v', function() {
-            seymour(['node', 'seymour', '-v'], {});
-            assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
-        })
-    ]);
+
+test('version with -v', function(t) {
+    const require = createRequire(import.meta.url);
+    const pkgJson = require('seymour/package.json');
+    const version = pkgJson.version;
+
+    seymour(['node', 'seymour', '-v'], {});
+    assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
 });
 
 
 test('bad project', function(t) {
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova, 'findProjectRoot', function() {
         return null;
     });
@@ -107,29 +93,6 @@ test('no parameters', function(t) {
         fetch: true
     };
 
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -149,7 +112,7 @@ test('no parameters', function(t) {
 });
 
 
-test('failing build', function(t) {
+test('reject on failing prepare', function(t) {
     var opts = {
         platforms: [],
         options: {device: true, debug: true},
@@ -158,63 +121,45 @@ test('failing build', function(t) {
         fetch: true
     };
 
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.reject(new Error(""));
     });
 
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
-
-    return Promise.all([
-        t.test('prepare', function(t2) {
-            t2.mock.method(cordova.prepare, 'call', function() {
-                return Promise.reject(new Error(""));
-            });
-
-            return seymour([], {})
-                .then(function() {
-                    assert.fail('resolves');
-                })
-                .catch(function() {
-                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
-                });
-        }),
-
-        t.test('compile', function(t2) {
-            t2.mock.method(cordova.prepare, 'call', function() {
-                return Promise.resolve(true);
-            });
-            t2.mock.method(cordova.compile, 'call', function() {
-                return Promise.reject(new Error(""));
-            });
-
-            return seymour([], {})
-                .then(function() {
-                    assert.fail('resolves');
-                })
-                .catch(function() {
-                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
-                    assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
-                });
+    return seymour([], {})
+        .then(function() {
+            assert.fail('resolves');
         })
-    ]);
+        .catch(function() {
+            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+        });
+});
+
+
+test('reject on failing compile', function(t) {
+    var opts = {
+        platforms: [],
+        options: {device: true, debug: true},
+        verbose: false,
+        silent: false,
+        fetch: true
+    };
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.reject(new Error(""));
+    });
+
+    return seymour([], {})
+        .then(function() {
+            assert.fail('resolves');
+        })
+        .catch(function() {
+            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+        });
 });
 
 
@@ -226,29 +171,6 @@ test('SEY_VERBOSE', function(t) {
         silent: false,
         fetch: true
     };
-
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
 
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
@@ -274,29 +196,6 @@ test('SEY_BUILD_PLATFORMS', function(t) {
         fetch: true
     };
 
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -321,6 +220,46 @@ test('SEY_BUILD_MODE', function(t) {
         fetch: true
     };
 
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+
+    return seymour([], {})
+        .then(function() {
+            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
+            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+        });
+});
+
+
+test('SEY_BUILD_MODE = debug', function(t) {
+    var debug_opts = {
+        platforms: [],
+        options: {device: true, debug: true},
+        verbose: false,
+        silent: false,
+        fetch: true
+    };
+
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
+    });
+
+    return seymour([], {SEY_BUILD_MODE: "debug"})
+        .then(function() {
+            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
+            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+        });
+});
+
+
+test('SEY_BUILD_MODE = release', function(t) {
     var release_opts = {
         platforms: [],
         options: {device: true, release: true},
@@ -329,77 +268,18 @@ test('SEY_BUILD_MODE', function(t) {
         fetch: true
     };
 
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
+    t.mock.method(cordova.prepare, 'call', function() {
+        return Promise.resolve(true);
+    });
+    t.mock.method(cordova.compile, 'call', function() {
+        return Promise.resolve(true);
     });
 
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
-    return Promise.all([
-        t.test('unspecified', function(t2) {
-            t2.mock.method(cordova.prepare, 'call', function() {
-                return Promise.resolve(true);
-            });
-            t2.mock.method(cordova.compile, 'call', function() {
-                return Promise.resolve(true);
-            });
-
-            return seymour([], {})
-                .then(function() {
-                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
-                    assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
-                });
-        }),
-
-
-        t.test('= "debug"', function(t2) {
-            t2.mock.method(cordova.prepare, 'call', function() {
-                return Promise.resolve(true);
-            });
-            t2.mock.method(cordova.compile, 'call', function() {
-                return Promise.resolve(true);
-            });
-
-            return seymour([], {SEY_BUILD_MODE: "debug"})
-                .then(function() {
-                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
-                    assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
-                });
-        }),
-
-
-        t.test('= "release"', function(t2) {
-            t2.mock.method(cordova.prepare, 'call', function() {
-                return Promise.resolve(true);
-            });
-            t2.mock.method(cordova.compile, 'call', function() {
-                return Promise.resolve(true);
-            });
-
-            return seymour([], {SEY_BUILD_MODE: "release"})
-                .then(function() {
-                    assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], release_opts, 'calls prepare with release=true');
-                    assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
-                });
-        })
-    ]);
+    return seymour([], {SEY_BUILD_MODE: "release"})
+        .then(function() {
+            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], release_opts, 'calls prepare with release=true');
+            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+        });
 });
 
 
@@ -411,29 +291,6 @@ test('SEY_BUILD_CONFIG', function(t) {
         silent: false,
         fetch: true
     };
-
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
 
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
@@ -453,29 +310,6 @@ test('SEY_BUILD_CONFIG', function(t) {
 test('SEY_BUILD_NUMBER', function(t) {
     var config_path = path.join(__dirname, 'config.xml');
 
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -485,7 +319,6 @@ test('SEY_BUILD_NUMBER', function(t) {
 
     return seymour([], {SEY_BUILD_NUMBER: 234})
         .then(function() {
-            fs.readFileSync.mock.restore();
             var config = new ConfigParser(config_path);
 
             assert.strictEqual(config.android_versionCode(), '234', 'sets the android version code');
@@ -495,29 +328,6 @@ test('SEY_BUILD_NUMBER', function(t) {
 
 
 test('SEY_APP_ID', function(t) {
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -535,29 +345,6 @@ test('SEY_APP_ID', function(t) {
 
 
 test('SEY_APP_NAME', function(t) {
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -575,29 +362,6 @@ test('SEY_APP_NAME', function(t) {
 
 
 test('SEY_APP_SHORTNAME', function(t) {
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -615,29 +379,6 @@ test('SEY_APP_SHORTNAME', function(t) {
 
 
 test('SEY_APP_VERSION', function(t) {
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -655,29 +396,6 @@ test('SEY_APP_VERSION', function(t) {
 
 
 test('Preferences', function(t) {
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -694,29 +412,6 @@ test('Preferences', function(t) {
 });
 
 test('Platform Preferences', function(t) {
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
@@ -734,29 +429,6 @@ test('Platform Preferences', function(t) {
 
 
 test('config-only mode', function(t) {
-    t.mock.method(console, 'log', function() {});
-
-    var logger = CordovaLogger.get();
-    t.mock.method(logger, 'subscribe', function() {});
-
-    var es = fs.existsSync;
-    t.mock.method(fs, 'existsSync', function(f) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return true;
-        }
-
-        return es.call(this, f);
-    });
-
-    var rfs = fs.readFileSync;
-    t.mock.method(fs, 'readFileSync', function(f, ...args) {
-        if (f === path.join(process.cwd(), 'config.xml')) {
-            return rfs.call(this, path.join(process.cwd(), 'testconfig.xml'), ...args);
-        }
-
-        return rfs.call(this, f, ...args);
-    });
-
     t.mock.method(cordova.prepare, 'call', function() {
         return Promise.resolve(true);
     });
