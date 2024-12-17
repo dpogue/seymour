@@ -34,7 +34,8 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: javascript
+          tools: linked
+          languages: javascript, actions
           queries: security-and-quality
 
       - name: Perform CodeQL Analysis
