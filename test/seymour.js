@@ -15,15 +15,13 @@
  */
 
 import test from 'node:test';
-import assert from 'node:assert';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import url from 'node:url';
 import cordovaLib from 'cordova-lib';
 import cordovaCommon from 'cordova-common';
 import seymour from 'seymour';
-//import pkgJson from 'seymour/package.json' with { type: 'json' }; // requires Node 20
+import pkgJson from 'seymour/package.json' with { type: 'json' };
 
 const { cordova } = cordovaLib;
 const { ConfigParser, CordovaLogger, CordovaError } = cordovaCommon;
@@ -49,22 +47,14 @@ test.mock.method(logger, 'subscribe', function() {});
 
 
 test('version with --version', function(t) {
-    const require = createRequire(import.meta.url);
-    const pkgJson = require('seymour/package.json');
-    const version = pkgJson.version;
-
     seymour(['node', 'seymour', '--version'], {});
-    assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
+    t.assert.ok(console.log.mock.calls[0].arguments[0].match(pkgJson.version), 'prints version');
 });
 
 
 test('version with -v', function(t) {
-    const require = createRequire(import.meta.url);
-    const pkgJson = require('seymour/package.json');
-    const version = pkgJson.version;
-
     seymour(['node', 'seymour', '-v'], {});
-    assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
+    t.assert.ok(console.log.mock.calls[0].arguments[0].match(pkgJson.version), 'prints version');
 });
 
 test('bad project', function(t) {
@@ -74,10 +64,10 @@ test('bad project', function(t) {
 
     return seymour([], {})
         .then(function(res) {
-            assert.fail('expected to reject');
+            t.assert.fail('expected to reject');
         })
         .catch(function(err) {
-            assert.ok(err instanceof CordovaError, 'throws a CordovaError');
+            t.assert.ok(err instanceof CordovaError, 'throws a CordovaError');
         });
 });
 
@@ -101,11 +91,11 @@ test('no parameters', function(t) {
     return seymour([], {})
         .then(function(res) {
             var prepareCalls = cordova.prepare.call.mock.calls;
-            assert.strictEqual(prepareCalls.length, 1, 'calls prepare');
-            assert.deepStrictEqual(prepareCalls[0].arguments[1], opts, 'calls prepare with opts');
-            assert.strictEqual(cordova.compile.call.mock.calls.length, 1, 'calls compile');
+            t.assert.strictEqual(prepareCalls.length, 1, 'calls prepare');
+            t.assert.deepStrictEqual(prepareCalls[0].arguments[1], opts, 'calls prepare with opts');
+            t.assert.strictEqual(cordova.compile.call.mock.calls.length, 1, 'calls compile');
 
-            assert.strictEqual(logger.subscribe.mock.callCount(), 1, 'subscribes the logger');
+            t.assert.strictEqual(logger.subscribe.mock.callCount(), 1, 'subscribes the logger');
         });
 });
 
@@ -125,10 +115,10 @@ test('reject on failing prepare', function(t) {
 
     return seymour([], {})
         .then(function() {
-            assert.fail('resolves');
+            t.assert.fail('resolves');
         })
         .catch(function() {
-            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            t.assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
         });
 });
 
@@ -152,11 +142,11 @@ test('reject on failing compile', function(t) {
 
     return seymour([], {})
         .then(function() {
-            assert.fail('resolves');
+            t.assert.fail('resolves');
         })
         .catch(function() {
-            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
-            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+            t.assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            t.assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
         });
 });
 
@@ -179,8 +169,8 @@ test('SEY_VERBOSE', function(t) {
 
     return seymour([], {SEY_VERBOSE: true})
         .then(function() {
-            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
-            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+            t.assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            t.assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
         });
 });
 
@@ -203,8 +193,8 @@ test('SEY_BUILD_PLATFORMS', function(t) {
 
     return seymour([], {SEY_BUILD_PLATFORMS: "Windows,iOS"})
         .then(function() {
-            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
-            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+            t.assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            t.assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
         });
 });
 
@@ -227,8 +217,8 @@ test('SEY_BUILD_MODE', function(t) {
 
     return seymour([], {})
         .then(function() {
-            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
-            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+            t.assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
+            t.assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
         });
 });
 
@@ -251,8 +241,8 @@ test('SEY_BUILD_MODE = debug', function(t) {
 
     return seymour([], {SEY_BUILD_MODE: "debug"})
         .then(function() {
-            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
-            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+            t.assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], debug_opts, 'calls prepare with debug=true');
+            t.assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
         });
 });
 
@@ -275,8 +265,8 @@ test('SEY_BUILD_MODE = release', function(t) {
 
     return seymour([], {SEY_BUILD_MODE: "release"})
         .then(function() {
-            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], release_opts, 'calls prepare with release=true');
-            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+            t.assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], release_opts, 'calls prepare with release=true');
+            t.assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
         });
 });
 
@@ -299,8 +289,8 @@ test('SEY_BUILD_CONFIG', function(t) {
 
     return seymour([], {SEY_BUILD_CONFIG: 'build.json'})
         .then(function(res) {
-            assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
-            assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
+            t.assert.deepStrictEqual(cordova.prepare.call.mock.calls[0].arguments[1], opts, 'calls prepare');
+            t.assert.strictEqual(cordova.compile.call.mock.callCount(), 1, 'calls compile');
         });
 });
 
@@ -319,8 +309,8 @@ test('SEY_BUILD_NUMBER', function(t) {
         .then(function() {
             var config = new ConfigParser(config_path);
 
-            assert.strictEqual(config.android_versionCode(), '234', 'sets the android version code');
-            assert.strictEqual(config.ios_CFBundleVersion(), '234', 'sets the iOS bundle version');
+            t.assert.strictEqual(config.android_versionCode(), '234', 'sets the android version code');
+            t.assert.strictEqual(config.ios_CFBundleVersion(), '234', 'sets the iOS bundle version');
         });
 });
 
@@ -337,7 +327,7 @@ test('SEY_APP_ID', function(t) {
     return seymour([], {SEY_APP_ID: 'com.example.app.id'})
         .then(function() {
             var call = ConfigParser.prototype.setPackageName.mock.calls[0];
-            assert.strictEqual(call.arguments[0], 'com.example.app.id', 'sets the application id');
+            t.assert.strictEqual(call.arguments[0], 'com.example.app.id', 'sets the application id');
         });
 });
 
@@ -354,7 +344,7 @@ test('SEY_APP_NAME', function(t) {
     return seymour([], {SEY_APP_NAME: 'MyApp'})
         .then(function() {
             var call = ConfigParser.prototype.setName.mock.calls[0];
-            assert.strictEqual(call.arguments[0], 'MyApp', 'sets the application name');
+            t.assert.strictEqual(call.arguments[0], 'MyApp', 'sets the application name');
         });
 });
 
@@ -371,7 +361,7 @@ test('SEY_APP_SHORTNAME', function(t) {
     return seymour([], {SEY_APP_SHORTNAME: 'MyApp'})
         .then(function() {
             var call = ConfigParser.prototype.setShortName.mock.calls[0];
-            assert.strictEqual(call.arguments[0], 'MyApp', 'sets the display name');
+            t.assert.strictEqual(call.arguments[0], 'MyApp', 'sets the display name');
         });
 });
 
@@ -388,7 +378,7 @@ test('SEY_APP_VERSION', function(t) {
     return seymour([], {SEY_APP_VERSION: '1.2.3-qa'})
         .then(function() {
             var call = ConfigParser.prototype.setVersion.mock.calls[0];
-            assert.strictEqual(call.arguments[0], '1.2.3-qa', 'sets the application version');
+            t.assert.strictEqual(call.arguments[0], '1.2.3-qa', 'sets the application version');
         });
 });
 
@@ -405,7 +395,7 @@ test('Preferences', function(t) {
     return seymour([], { SEY_PREFERENCE_backgroundColor: 'FF000000' })
         .then(function() {
             var call = ConfigParser.prototype.setGlobalPreference.mock.calls[0];
-            assert.deepStrictEqual(call.arguments, ['backgroundColor', 'FF000000'], 'sets the preference');
+            t.assert.deepStrictEqual(call.arguments, ['backgroundColor', 'FF000000'], 'sets the preference');
         });
 });
 
@@ -421,7 +411,7 @@ test('Platform Preferences', function(t) {
     return seymour([], { SEY_IOS_PREFERENCE_sas_api_key: '123456789' })
         .then(function() {
             var call = ConfigParser.prototype.setPlatformPreference.mock.calls[0];
-            assert.deepStrictEqual(call.arguments, ['sas_api_key', 'ios', '123456789'], 'sets the preference');
+            t.assert.deepStrictEqual(call.arguments, ['sas_api_key', 'ios', '123456789'], 'sets the preference');
         });
 });
 
@@ -437,9 +427,9 @@ test('config-only mode', function(t) {
 
     return seymour(['node', 'seymour', '--config-only'], {SEY_APP_ID: 'com.example.app.id'}).then(function() {
         var call = ConfigParser.prototype.setPackageName.mock.calls[0];
-        assert.strictEqual(call.arguments[0], 'com.example.app.id', 'sets the application id');
+        t.assert.strictEqual(call.arguments[0], 'com.example.app.id', 'sets the application id');
 
-        assert.strictEqual(cordova.prepare.call.mock.calls.length, 0, 'calls prepare');
-        assert.strictEqual(cordova.compile.call.mock.calls.length, 0, 'calls compile');
+        t.assert.strictEqual(cordova.prepare.call.mock.calls.length, 0, 'calls prepare');
+        t.assert.strictEqual(cordova.compile.call.mock.calls.length, 0, 'calls compile');
     });
 });

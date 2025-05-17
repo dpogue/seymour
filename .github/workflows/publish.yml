@@ -33,10 +33,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Use Node.js 20
+      - name: Use Node.js latest
         uses: actions/setup-node@v4
         with:
-          node-version: 20
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
