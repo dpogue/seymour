@@ -44,25 +44,31 @@ jobs:
 
 
   test:
-    name: Test NodeJS ${{ matrix.node-version }} on ${{ matrix.os }}
+    name: Test NodeJS ${{ matrix.node.version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [18, 20, 22, 24]
         os: [ubuntu-latest, windows-latest, macos-latest]
+        node:
+          - version: 18
+          - version: 20
+          - version: 22
+          - version: 24
+            options: --test-coverage-lines=100
     permissions:
       contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node.version }}
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ matrix.node.version }}
           cache: npm
 
       - name: npm install and test
         run: npm cit
         env:
           CI: true
+          NODE_OPTIONS: ${{ matrix.node.options }}

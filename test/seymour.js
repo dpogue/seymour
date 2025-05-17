@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* node:coverage disable */
 
 import test from 'node:test';
 import assert from 'node:assert';
@@ -24,7 +23,7 @@ import url from 'node:url';
 import cordovaLib from 'cordova-lib';
 import cordovaCommon from 'cordova-common';
 import seymour from 'seymour';
-//import pkgJson from 'seymour/package.json' assert { type: 'json' };
+//import pkgJson from 'seymour/package.json' with { type: 'json' }; // requires Node 20
 
 const { cordova } = cordovaLib;
 const { ConfigParser, CordovaLogger, CordovaError } = cordovaCommon;
@@ -67,7 +66,6 @@ test('version with -v', function(t) {
     seymour(['node', 'seymour', '-v'], {});
     assert.ok(console.log.mock.calls[0].arguments[0].match(version), 'prints version');
 });
-
 
 test('bad project', function(t) {
     t.mock.method(cordova, 'findProjectRoot', function() {
