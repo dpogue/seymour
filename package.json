@@ -25,7 +25,7 @@
   },
   "scripts": {
     "lint": "eslint",
-    "test": "node --test",
+    "test": "node --test --experimental-test-coverage",
     "preversion": "npm run lint && npm test",
     "postversion": "git push && git push --tags"
   },
