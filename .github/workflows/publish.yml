@@ -40,7 +40,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install latest npm
-        run: npm install -g npm
+        run: npm install -g npm@latest
 
       - name: npm install and test
         run: npm cit
@@ -48,15 +48,10 @@ jobs:
           CI: true
 
       - name: npm version
-        run: |
-            npm version ${{ github.event.inputs.version-type == 'Custom' && github.event.inputs.version-str || github.event.inputs.version-type }}
+        run: npm version ${{ github.event.inputs.version-type == 'Custom' && github.event.inputs.version-str || github.event.inputs.version-type }}
 
       - name: git push
-        run: |
-            git push origin --follow-tags
+        run: git push origin --follow-tags
 
       - name: npm publish
-        run: |
-            npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: npm publish
