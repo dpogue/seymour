@@ -34,7 +34,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Use Node.js latest
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           cache: npm
           registry-url: 'https://registry.npmjs.org'
