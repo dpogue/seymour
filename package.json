@@ -34,6 +34,6 @@
     "cordova-lib": "^13.0.0"
   },
   "devDependencies": {
-    "eslint": "^9.0.0"
+    "eslint": "^10.0.0"
   }
 }
